@@ -999,6 +999,25 @@ async function verkleinern(datei, maxKante = 1600, guete = 0.82){
   }
 }
 
+/* Schema-Zeichnung als JPEG (base64) fürs PDF der Bestellung */
+async function schemaAlsJpeg(){
+  const svg = $("dia");
+  const vb = svg.viewBox.baseVal;
+  const kopie = svg.cloneNode(true);
+  kopie.setAttribute("width", vb.width); kopie.setAttribute("height", vb.height);
+  const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(kopie));
+  const img = new Image();
+  await new Promise((fertig, fehler) => {
+    img.onload = fertig; img.onerror = () => fehler(new Error("Schema nicht lesbar")); img.src = url;
+  });
+  const f = 3, c = document.createElement("canvas");
+  c.width = Math.round(vb.width * f); c.height = Math.round(vb.height * f);
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);   // JPEG kennt keine Transparenz
+  g.drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.9).split(",")[1];
+}
+
 const FOTO_LABEL = { oese:"Öse", kupferanfang:"Kupferanfang", kupferende:"Kupferende" };
 const FOTOS = { oese:null, kupferanfang:null, kupferende:null };
 const kb = n => n < 1024 ? n + " B" : (n/1024 < 1024 ? Math.round(n/1024) + " kB"
@@ -1176,6 +1195,7 @@ async function bestellen(){
     return;
   }
   const nutzlast = payload();
+  try{ nutzlast.schema = await schemaAlsJpeg(); }catch(e){ /* PDF dann ohne Schema */ }
   const anzahl = nutzlast.fotos ? nutzlast.fotos.length : 0;
   st.className = "status-msg";
   st.textContent = "Wird gesendet" + (anzahl ? " · " + anzahl + " Bild" + (anzahl>1?"er":"") : "") + " …";
@@ -1186,7 +1206,7 @@ async function bestellen(){
     try{ localStorage.removeItem(LS_ENTWURF); }catch(e){}
     st.className = "status-msg"; st.textContent = "";
     $("fertig-text").textContent = (antwort.bestaetigung
-        ? "Die Bestätigung geht an " + $("email").value.trim() + ". "
+        ? "Die Bestätigung" + (antwort.pdf ? " mit der Aufstellung als PDF" : "") + " geht an " + $("email").value.trim() + ". "
         : "Die Bestellung ist angekommen. ")
       + "Bei Rückfragen melde ich mich unter " + $("telefon").value.trim() + ".";
     ["ansicht-formular","sendbar","schema-karte","rechen-karte"].forEach(id => $(id).hidden = true);
