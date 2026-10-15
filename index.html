@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#16181d">
 <title>Basssaite messen &amp; bestellen – Pianos Sulzener</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Basssaite">
 <style>
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
@@ -273,12 +277,12 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
             <li><b>Anzahl Ringe nach Öse</b>: die engen Windungen direkt hinter der Öse.</li>
             <li><b>Länge der Zopföse</b>: von der Ösenhinterkante bis zum letzten Ring.</li>
             <li><b>Kupferanfang und -ende</b>: normal, angefräst oder französisches Ende (dann mit Länge).</li>
-            <li><b>Spinnrichtung</b>: schau dir die Schraffur in der Zeichnung an, sie kippt mit deiner Auswahl. Ob du die Steigung am Anfang oder am Ende der Saite betrachtest, spielt keine Rolle. Die Steigungsrichtung bleibt aus beiden Blickrichtungen gleich.</li>
+            <li><b>Spinnrichtung</b>: schau dir die Schraffur in der Zeichnung an, sie kippt mit deiner Auswahl. Ob du die Steigung aus der Richtung vom Anfang oder vom Ende der Saite betrachtest, spielt keine Rolle. Die Steigungsrichtung bleibt aus beiden Blickrichtungen gleich.</li>
           </ul>
         </div>
         <div class="anl-block">
           <h3><span class="nr">4</span> Fotos helfen</h3>
-          <p>Ein Foto von Öse, Kupferanfang und Kupferende klärt fast jede Unklarheit. Es hilft auch, die neue Saite möglichst gleich wie die benachbarten zu machen.</p>
+          <p>Ein Foto von Öse, Kupferanfang und Kupferende klärt fast jede Unklarheit. Es hilft auch dabei, die neue Saite optisch möglichst genau wie die benachbarten Saiten zu machen.</p>
         </div>
         <div class="anl-block anl-wichtig">
           <h3><span class="nr">5</span> Beim Aufziehen: Saite drehen</h3>
@@ -1206,9 +1210,9 @@ async function bestellen(){
     try{ localStorage.removeItem(LS_ENTWURF); }catch(e){}
     st.className = "status-msg"; st.textContent = "";
     $("fertig-text").textContent = (antwort.bestaetigung
-        ? "Die Bestätigung" + (antwort.pdf ? " mit der Aufstellung als PDF" : "") + " geht an " + $("email").value.trim() + ". "
+        ? "Die Bestätigung" + (antwort.pdf ? " mit der Aufstellung als PDF" : "") + " wurde an " + $("email").value.trim() + " verschickt. "
         : "Die Bestellung ist angekommen. ")
-      + "Bei Rückfragen melde ich mich unter " + $("telefon").value.trim() + ".";
+      + "Bei Rückfragen melden wir uns bei der angegebenen Nummer " + $("telefon").value.trim() + " oder per Mail.";
     ["ansicht-formular","sendbar","schema-karte","rechen-karte"].forEach(id => $(id).hidden = true);
     $("fertig").hidden = false;
     window.scrollTo({top:0});

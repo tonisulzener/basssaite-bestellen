@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Favicon: vereinfachte Basssaite, damit sie auch in 16 px erkennbar bleibt -->
+  <rect width="32" height="32" rx="6" fill="#16181d"/>
+  <g transform="rotate(-38 16 17)">
+    <line x1="9" y1="17" x2="34" y2="17" stroke="#9aabb5" stroke-width="2"/>
+    <rect x="13" y="12.5" width="15" height="9" rx="1" fill="#c87941"/>
+    <path d="M16 12.5 l-2 9 M19.5 12.5 l-2 9 M23 12.5 l-2 9 M26.5 12.5 l-2 9" stroke="#8a4a1e" stroke-width="1.2"/>
+    <ellipse cx="6" cy="17" rx="3.6" ry="2.4" fill="none" stroke="#e9ebf0" stroke-width="1.8"/>
+  </g>
+</svg>
