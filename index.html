@@ -57,6 +57,9 @@ input[type=number]{ -moz-appearance:textfield; }
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
 .row2{ display:flex; gap:10px; } .row2>.field{ flex:1; min-width:0; }
+.tel-zeile{ display:flex; gap:7px; }
+.tel-zeile select{ width:auto; flex:0 0 auto; }
+.tel-zeile input{ flex:1; min-width:0; }
 /* Wie .row2, aber die Felder sitzen unten bündig — damit bei einem
    zweizeiligen Label (z.B. Länge der Zopföse) die Eingaben auf
    gleicher Höhe stehen. */
@@ -277,7 +280,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
             <li><b>Anzahl Ringe nach Öse</b>: die engen Windungen direkt hinter der Öse.</li>
             <li><b>Länge der Zopföse</b>: von der Ösenhinterkante bis zum letzten Ring.</li>
             <li><b>Kupferanfang und -ende</b>: normal, angefräst oder französisches Ende (dann mit Länge).</li>
-            <li><b>Spinnrichtung</b>: schau dir die Schraffur in der Zeichnung an, sie kippt mit deiner Auswahl. Ob du die Steigung aus der Richtung vom Anfang oder vom Ende der Saite betrachtest, spielt keine Rolle. Die Steigungsrichtung bleibt aus beiden Blickrichtungen gleich.</li>
+            <li><b>Spinnrichtung</b>: ob du die Steigung aus der Richtung vom Anfang oder vom Ende der Saite betrachtest, spielt keine Rolle. Die Steigungsrichtung bleibt aus beiden Blickrichtungen gleich. Schau dir die Schraffur im Schema an, sie kippt mit deiner Auswahl.</li>
           </ul>
         </div>
         <div class="anl-block">
@@ -287,7 +290,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
         <div class="anl-block anl-wichtig">
           <h3><span class="nr">5</span> Beim Aufziehen: Saite drehen</h3>
           <p class="anl-quelle">Sinngemäss nach den Angaben von Hellerbass.</p>
-          <p>Empfohlen sind <b>zwei volle Umdrehungen</b> bei einfach und <b>eine halbe Umdrehung</b> bei doppelt umsponnenen Saiten. Da das Kupfer nach links ansteigt, wird nach rechts gedreht, also <b>im Uhrzeigersinn</b>. Ob man ober- oder unterhalb des Instruments steht, ändert nichts an der Drehrichtung.</p>
+          <p>Empfohlen sind <b>zwei volle Umdrehungen</b> bei einfach und <b>eine halbe Umdrehung</b> bei doppelt umsponnenen Saiten. Wenn das Kupfer nach links ansteigt, wird nach rechts gedreht (<b>im Uhrzeigersinn</b>). Wenn das Kupfer nach rechts ansteigt, wird nach links gedreht (<b>gegen den Uhrzeigersinn</b>). Ob man ober- oder unterhalb des Instruments steht, ändert nichts an der Drehrichtung.</p>
         </div>
       </div>
     </details>
@@ -305,17 +308,18 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
           <label for="person">Ansprechperson</label>
           <input id="person" name="person" type="text" autocomplete="name">
         </div>
-        <div class="row2">
-          <div class="field">
-            <label for="email">E-Mail <span class="req">*</span></label>
-            <input id="email" name="email" type="email" required inputmode="email" autocomplete="email" autocapitalize="off">
-            <div class="err">Gültige E-Mail angeben.</div>
+        <div class="field">
+          <label for="email">E-Mail <span class="req">*</span></label>
+          <input id="email" name="email" type="email" required inputmode="email" autocomplete="email" autocapitalize="off">
+          <div class="err">Gültige E-Mail angeben.</div>
+        </div>
+        <div class="field">
+          <label for="telefon">Telefon <span class="req">*</span></label>
+          <div class="tel-zeile">
+            <select id="vorwahl" name="vorwahl" aria-label="Landesvorwahl" autocomplete="tel-country-code"></select>
+            <input id="telefon" name="telefon" type="tel" required inputmode="tel" autocomplete="tel-national" placeholder="79 409 80 47">
           </div>
-          <div class="field">
-            <label for="telefon">Telefon <span class="req">*</span></label>
-            <input id="telefon" name="telefon" type="tel" required inputmode="tel" autocomplete="tel" placeholder="+41 …">
-            <div class="err">Telefonnummer angeben.</div>
-          </div>
+          <div class="err">Telefonnummer angeben.</div>
         </div>
         <div class="field">
           <label for="adresse">Lieferadresse</label>
@@ -595,7 +599,7 @@ const FELDER = ["name","dGesamt","dKern","dUmspAnfang","umspunnst","kernart","oe
   "oesenRichtung","spinnrichtung","ringe","lZopf","kupferanfang","kupferende","lFrzAnfang",
   "lFrzEnde","stahlnummer","kupfernummer","kupferUnter","kupferOber","anhOben","anhUnten",
   "unterOben","unterUnten","oberOben","oberUnten","messzustand"];
-const KONTAKT = ["firma","person","email","telefon","adresse","plzOrt"];
+const KONTAKT = ["firma","person","email","vorwahl","telefon","adresse","plzOrt"];
 
 /* ---------- bedingte Felder ---------- */
 const istDoppelt = () => $("umspunnst").value === "Doppelt";
@@ -1111,6 +1115,78 @@ async function senden(nutzlast, sekunden){
   }finally{ clearTimeout(uhr); }
 }
 
+/* ---------- Telefon: Landesvorwahl und Nummer mit Abständen ----------
+   Das Beispiel bestimmt die Gruppierung, z.B. «79 409 80 47» → 2-3-2-2.
+   Die führende 0 der Landesnummer fällt weg (ausser in Italien). */
+const VORWAHLEN = [
+  ["+41",  "🇨🇭", "Schweiz",         "79 409 80 47"],
+  ["+423", "🇱🇮", "Liechtenstein",   "791 23 45"],
+  ["+49",  "🇩🇪", "Deutschland",     "151 2345 6789"],
+  ["+43",  "🇦🇹", "Österreich",      "664 123 4567"],
+  ["+33",  "🇫🇷", "Frankreich",      "6 12 34 56 78"],
+  ["+39",  "🇮🇹", "Italien",         "312 345 6789", true],
+  ["+31",  "🇳🇱", "Niederlande",     "6 1234 5678"],
+  ["+32",  "🇧🇪", "Belgien",         "470 12 34 56"],
+  ["+44",  "🇬🇧", "Grossbritannien", "7400 123 456"],
+  ["+1",   "🇺🇸", "USA / Kanada",    "212 555 0123"],
+  ["",     "🌐", "Andere",          "+46 70 123 45 67"]
+];
+VORWAHLEN.forEach(([code, flagge, land]) => {
+  const o = document.createElement("option");
+  o.value = code; o.textContent = flagge + " " + (code || "Andere"); o.title = land;
+  $("vorwahl").appendChild(o);
+});
+const vorwahlInfo = () => VORWAHLEN.find(v => v[0] === $("vorwahl").value) || VORWAHLEN[0];
+
+function telFormat(text){
+  const [code, , , beispiel, nullBehalten] = vorwahlInfo();
+  if(!code) return text;                              // «Andere»: so lassen, wie eingegeben
+  let z = text.replace(/\D/g, "");
+  if(!nullBehalten) z = z.replace(/^0+/, "");
+  const teile = []; let i = 0;
+  for(const g of beispiel.split(" ").map(t => t.length)){
+    if(i >= z.length) break;
+    teile.push(z.slice(i, i + g)); i += g;
+  }
+  if(i < z.length) teile.push(z.slice(i));            // längere Nummern: Rest anhängen
+  return teile.join(" ");
+}
+/* «+41 79 …» oder «0041 79 …» eingegeben: Vorwahl auswählen, Rest zurückgeben */
+function vorwahlErkennen(text){
+  const t = text.trim().replace(/^00/, "+");
+  if(!t.startsWith("+")) return text;
+  const ziffern = "+" + t.slice(1).replace(/\D/g, "");
+  const treffer = VORWAHLEN.filter(v => v[0]).sort((a, b) => b[0].length - a[0].length)
+    .find(v => ziffern.startsWith(v[0]));
+  $("vorwahl").value = treffer ? treffer[0] : "";
+  return treffer ? ziffern.slice(treffer[0].length) : text;
+}
+function telNeuFormatieren(){
+  $("telefon").value = telFormat(vorwahlErkennen($("telefon").value)).trim();
+  $("telefon").placeholder = vorwahlInfo()[3];
+}
+const telVoll = () => {
+  const n = $("telefon").value.trim(), v = $("vorwahl").value;
+  return n ? (v ? v + " " + n : n) : "";
+};
+$("telefon").addEventListener("input", function(){
+  const roh = this.value, t = roh.trim();
+  /* Eine Vorwahl wie «+4…» oder «004…» wird gerade getippt: warten, bis sie vollständig ist */
+  if(t === "0" || /^(\+|00)\d{0,3}$/.test(t)){
+    const code = "+" + t.replace(/^(\+|00)/, "");
+    if(!VORWAHLEN.some(v => v[0] && v[0] === code)) return;
+  }
+  const rest = vorwahlErkennen(roh);
+  /* Nur formatieren, wenn am Ende getippt wird — sonst springt der Cursor */
+  if(rest !== roh || this.selectionStart === roh.length) this.value = telFormat(rest);
+  this.placeholder = vorwahlInfo()[3];
+});
+$("telefon").addEventListener("blur", telNeuFormatieren);
+$("vorwahl").addEventListener("change", () => {
+  telNeuFormatieren();
+  if($("telefon").closest(".field.invalid")) checkField($("telefon"));
+});
+
 /* ---------- Prüfung ---------- */
 function checkField(el){
   const f = el.closest(".field"); if(!f) return true;
@@ -1118,7 +1194,7 @@ function checkField(el){
   const v = el.value.trim();
   if(el.required && !v) ok = false;
   if(el.id === "email" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ok = false;
-  if(el.id === "telefon" && v.replace(/\D/g,"").length < 8) ok = false;
+  if(el.id === "telefon" && (v.replace(/\D/g,"").length < 6 || telVoll().replace(/\D/g,"").length < 8)) ok = false;
   if(el.id === "dGesamt"){
     const g=parseFloat($("dGesamt").value), k=parseFloat($("dKern").value);
     if(!isNaN(g)&&!isNaN(k)&&g<=k) ok=false;
@@ -1131,6 +1207,8 @@ function checkField(el){
 function payload(){
   const p = { aktion:"bestellung", quelle:"Bestellformular extern", besteller:{} };
   KONTAKT.forEach(k => { const v=$(k).value.trim(); if(v) p.besteller[k]=v; });
+  delete p.besteller.vorwahl;
+  if(telVoll()) p.besteller.telefon = telVoll();
   FELDER.forEach(k => { const v=String($(k).value).trim(); if(v!=="") p[k]=v; });
   if($("notiz").value.trim()) p.notiz = $("notiz").value.trim();
   const bilder = Object.entries(FOTOS).filter(([,f]) => f)
@@ -1157,6 +1235,7 @@ function laden(){
   try{
     const k=JSON.parse(localStorage.getItem(LS_KONTAKT)||"null");
     if(k) KONTAKT.forEach(id=>{ if(k[id]) $(id).value=k[id]; });
+    telNeuFormatieren();   // auch ältere gespeicherte Nummern wie «+41 79…»
     const e=JSON.parse(localStorage.getItem(LS_ENTWURF)||"null");
     if(e) Object.entries(e).forEach(([id,v])=>{ if($(id)) $(id).value=v; });
   }catch(e){}
@@ -1212,7 +1291,7 @@ async function bestellen(){
     $("fertig-text").textContent = (antwort.bestaetigung
         ? "Die Bestätigung" + (antwort.pdf ? " mit der Aufstellung als PDF" : "") + " wurde an " + $("email").value.trim() + " verschickt. "
         : "Die Bestellung ist angekommen. ")
-      + "Bei Rückfragen melden wir uns bei der angegebenen Nummer " + $("telefon").value.trim() + " oder per Mail.";
+      + "Bei Rückfragen melden wir uns bei der angegebenen Nummer " + telVoll() + " oder per Mail.";
     ["ansicht-formular","sendbar","schema-karte","rechen-karte"].forEach(id => $(id).hidden = true);
     $("fertig").hidden = false;
     window.scrollTo({top:0});
