@@ -228,6 +228,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
 }
 
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=turnstileBereit" async defer></script>
 </head>
 <body>
 <div class="app">
@@ -520,7 +521,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
       <div class="sec-body">
         <div class="field">
           <label for="notiz">Bemerkungen <span class="nprop">· Termin, Versand, Besonderheiten</span></label>
-          <textarea id="notiz" name="notiz"></textarea>
+          <textarea id="notiz" name="notiz" maxlength="4000"></textarea>
         </div>
         <div class="hp" aria-hidden="true"><label>Website <input id="website" name="website" tabindex="-1" autocomplete="off"></label></div>
       </div>
@@ -544,6 +545,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
   </div>
 
   <div class="sendbar" id="sendbar">
+    <div id="turnstile"></div>
     <div class="sendbar-in">
       <div class="status-msg" id="status" role="status" aria-live="polite"></div>
       <button type="submit" form="order" class="btn primary" id="btn-senden">Bestellung senden</button>
@@ -577,6 +579,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
    Durchmesser in µm, Längen in mm — wie in der internen Erfassung.
    ============================================================ */
 const ENDPOINT = "https://basssaite-bestellung.tonisulzener.workers.dev";   // eigener Worker nur für Bestellungen
+const TURNSTILE_SITEKEY = "0x4AAAAAAFXo2q3ZjpdyqJ9T";   // Cloudflare-Dashboard → Turnstile → Site Key
 const LS_KONTAKT = "sulzener.bestellung.kontakt";
 const LS_ENTWURF = "sulzener.bestellung.entwurf";
 
@@ -609,7 +612,7 @@ function syncConds(){
   /* Kupfernummer-Felder der nicht gewählten Bauart leeren */
   /* Anhangstift-Masse: Pflicht für die jeweils sichtbare Bauart */
   ["anhUnten","anhOben"].forEach(id => $(id).required = !istDoppelt());
-  ["oberUnten","unterUnten","unterOben","oberOben"].forEach(id => $(id).required = istDoppelt());
+  ["oberUnten","unterUnten","unterOben","oberOben","dUmspAnfang"].forEach(id => $(id).required = istDoppelt());
   if(istDoppelt()) $("kupfernummer").value = "";
   else { $("kupferOber").value = ""; $("kupferUnter").value = ""; }
 }
@@ -972,6 +975,8 @@ function heicLaden(){
   return new Promise((fertig, fehler) => {
     const sk = document.createElement("script");
     sk.src = "https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js";
+    sk.integrity = "sha512-VjmsArkf8Vv2yyvbXCyVxp+R3n4N2WyS1GEQ+YQxa7Hu0tx836WpY4nW9/T1W5JBmvuIsxkVH/DlHgp7NEMjDw==";
+    sk.crossOrigin = "anonymous";
     sk.onload = fertig;
     sk.onerror = () => fehler(new Error("HEIC-Umwandlung nicht erreichbar"));
     document.head.appendChild(sk);
@@ -1037,6 +1042,23 @@ document.querySelectorAll(".foto").forEach(box => {
   box.querySelector(".foto-weg").addEventListener("click", () => { FOTOS[slot] = null; fotoZeigen(slot); });
 });
 
+/* ---------- Turnstile (Schutz vor automatisierten Bestellungen) ----------
+   Das Widget zeigt sich nur, wenn Cloudflare eine Bestätigung braucht.
+   Jedes Token gilt für genau eine Bestellung, danach wird es erneuert. */
+let tsWidget = null, tsToken = "";
+window.turnstileBereit = function(){
+  tsWidget = window.turnstile.render("#turnstile", {
+    sitekey: TURNSTILE_SITEKEY, language: "de", appearance: "interaction-only",
+    callback: t => { tsToken = t; },
+    "expired-callback": () => { tsToken = ""; },
+    "error-callback": () => { tsToken = ""; }
+  });
+};
+function turnstileNeu(){
+  tsToken = "";
+  if(window.turnstile && tsWidget !== null) window.turnstile.reset(tsWidget);
+}
+
 /* ---------- Senden ----------
    Eine Stelle für alle Schreibzugriffe: mit Zeitgrenze, damit ein
    hängender Aufruf keinen Knopf dauerhaft sperrt, und mit der echten
@@ -1061,7 +1083,7 @@ async function senden(nutzlast, sekunden){
     }
     return j;
   }catch(err){
-    if(err.name === "AbortError") throw new Error("Zeitüberschreitung — nichts gespeichert");
+    if(err.name === "AbortError") throw new Error("Keine Antwort erhalten — die Bestellung ist vielleicht trotzdem angekommen. Bitte nicht nochmals senden, sondern kurz bei mir nachfragen");
     throw err;
   }finally{ clearTimeout(uhr); }
 }
@@ -1092,6 +1114,7 @@ function payload(){
     .map(([slot,f]) => ({ slot, label: FOTO_LABEL[slot], name: f.name, data: f.dataUrl.split(",")[1] }));
   if(bilder.length) p.fotos = bilder;
   if($("website").value) p.website = $("website").value;
+  p.turnstile = tsToken;
   return p;
 }
 
@@ -1105,8 +1128,7 @@ function kontaktSichern(){
 }
 function entwurfSichern(){
   const s={}; form.querySelectorAll("input,select,textarea").forEach(el=>{
-    if(el.id && el.type!=="file" && el.type!=="hidden" && el.type!=="checkbox" && !KONTAKT.includes(el.id)) s[el.id]=el.value; });
-  try{ localStorage.setItem(LS_ENTWURF, JSON.stringify(s)); }catch(e){}
+    if(el.id && el.type!=="file" && el.type!=="hidden" && el.type!=="checkbox" && !KONTAKT.includes(el.id)) s[el.id]=el.value; });  try{ localStorage.setItem(LS_ENTWURF, JSON.stringify(s)); }catch(e){}
 }
 function laden(){
   try{
@@ -1146,25 +1168,34 @@ async function bestellen(){
     setTimeout(() => bad[0].focus({preventScroll:true}), 350);
     return;
   }
+  if(!tsToken){
+    st.className = "status-msg warn";
+    st.textContent = window.turnstile
+      ? "Die Sicherheitsprüfung läuft noch — bitte einen Moment warten und nochmals senden."
+      : "Die Sicherheitsprüfung konnte nicht geladen werden — bitte Internetverbindung prüfen und die Seite neu laden.";
+    return;
+  }
   const nutzlast = payload();
   const anzahl = nutzlast.fotos ? nutzlast.fotos.length : 0;
   st.className = "status-msg";
   st.textContent = "Wird gesendet" + (anzahl ? " · " + anzahl + " Bild" + (anzahl>1?"er":"") : "") + " …";
   const knopf = $("btn-senden"); knopf.disabled = true;
   try{
-    await senden(nutzlast, anzahl ? 120 : 45);
+    const antwort = await senden(nutzlast, anzahl ? 120 : 45);
     kontaktSichern();
     try{ localStorage.removeItem(LS_ENTWURF); }catch(e){}
     st.className = "status-msg"; st.textContent = "";
-    $("fertig-text").textContent = "Die Bestätigung geht an " + $("email").value.trim()
-      + ". Bei Rückfragen melde ich mich unter " + $("telefon").value.trim() + ".";
+    $("fertig-text").textContent = (antwort.bestaetigung
+        ? "Die Bestätigung geht an " + $("email").value.trim() + ". "
+        : "Die Bestellung ist angekommen. ")
+      + "Bei Rückfragen melde ich mich unter " + $("telefon").value.trim() + ".";
     ["ansicht-formular","sendbar","schema-karte","rechen-karte"].forEach(id => $(id).hidden = true);
     $("fertig").hidden = false;
     window.scrollTo({top:0});
   }catch(err){
     st.className = "status-msg bad";
     st.textContent = "Nicht gesendet — " + err.message + ". Deine Eingaben bleiben stehen, versuch es erneut.";
-  }finally{ knopf.disabled = false; }
+  }finally{ knopf.disabled = false; turnstileNeu(); }
 }
 form.addEventListener("submit", e => { e.preventDefault(); bestellen(); });
 
