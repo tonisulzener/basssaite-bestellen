@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16181d">
+<title>Basssaite bestellen – Pianos Sulzener</title>
+<style>
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{ font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; background:#e9ebf0; color:#1c1f25; -webkit-font-smoothing:antialiased; font-size:14px; }
+input,textarea,select,button{ font-family:inherit; }
+
+.app{ display:flex; min-height:100vh; align-items:stretch; }
+
+/* ===== EDITOR ===== */
+.editor{ width:430px; flex:0 0 430px; background:#fbfbfc; border-right:1px solid #dcdfe6; height:100vh; overflow-y:auto; position:sticky; top:0; }
+.ed-head{ position:relative; background:#16181d; color:#fff; padding:20px 20px 18px; overflow:hidden; }
+.ed-keys{ position:absolute; inset:0 0 auto 0; height:8px; display:flex; opacity:.9; }
+.ed-keys i{ flex:1; background:#0c0d10; border-right:2px solid #16181d; }
+.ed-keys i:nth-child(2n){ background:#23262d; }
+.ed-head h1{ font-size:15px; font-weight:650; margin:8px 0 3px; letter-spacing:.2px; }
+.ed-head .sub{ font-size:12px; color:#aeb3bd; margin:0; line-height:1.5; }
+.ed-head .dot{ color:#c8102e; }
+
+.toolbar{ position:sticky; top:0; z-index:5; background:#fbfbfcf2; backdrop-filter:saturate(1.2) blur(4px); border-bottom:1px solid #e6e8ee; padding:10px 12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+.sections{ padding:6px 14px 40px; }
+details.sec{ border:1px solid #e6e8ee; border-radius:11px; margin:10px 0; background:#fff; overflow:hidden; }
+details.sec>summary{ list-style:none; cursor:pointer; padding:13px 14px; font-weight:600; font-size:13.5px; display:flex; align-items:center; gap:9px; user-select:none; }
+details.sec>summary::-webkit-details-marker{ display:none; }
+details.sec>summary .chev{ margin-left:auto; transition:transform .2s ease; color:#8a8f9a; font-size:12px; }
+details.sec[open]>summary .chev{ transform:rotate(90deg); }
+details.sec>summary .ico{ color:#c8102e; font-size:15px; line-height:1; }
+details.sec>summary .cnt{ font-size:11px; font-weight:600; color:#8a8f9a; background:#f0f1f5; border-radius:20px; padding:2px 8px; }
+.sec-body{ padding:4px 14px 16px; border-top:1px solid #f0f1f5; }
+
+.field{ margin:11px 0; }
+.field>label{ display:block; font-size:11.5px; font-weight:600; color:#5b616c; margin-bottom:5px; letter-spacing:.2px; }
+.field>label .req{ color:#c8102e; }
+.field>label .nprop{ color:#b6bac2; font-weight:500; }
+.field input,.field textarea,.field select{ width:100%; border:1px solid #d3d7e0; border-radius:8px; padding:9px 10px; font-size:13.5px; color:#1c1f25; background:#fff; transition:border-color .15s, box-shadow .15s; }
+.field textarea{ resize:vertical; min-height:64px; line-height:1.5; }
+.field input:focus,.field textarea:focus,.field select:focus{ outline:none; border-color:#2f6fed; box-shadow:0 0 0 3px rgba(47,111,237,.14); }
+.field.invalid input,.field.invalid select{ border-color:#c8102e; box-shadow:0 0 0 3px rgba(200,16,46,.12); }
+.field .err{ font-size:11.5px; color:#c8102e; margin-top:4px; display:none; }
+.field.invalid .err{ display:block; }
+.field .um{ font-size:11px; color:#8a8f9a; margin-top:4px; font-variant-numeric:tabular-nums; }
+.field>label .mk{ display:inline-grid; place-items:center; width:16px; height:16px; border-radius:4px; background:#16181d; color:#fff; font-size:10px; font-weight:700; margin-right:5px; vertical-align:-3px; }
+.spin-note{ font-size:11.5px; color:#8a8f9a; margin:0 0 12px; line-height:1.55; }
+.spin-note b{ color:#5b616c; }
+input[type=number]{ -moz-appearance:textfield; }
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.row2{ display:flex; gap:10px; } .row2>.field{ flex:1; min-width:0; }
+/* Wie .row2, aber die Felder sitzen unten bündig — damit bei einem
+   zweizeiligen Label (z.B. Länge der Zopföse) die Eingaben auf
+   gleicher Höhe stehen. */
+.row2unten{ display:flex; gap:10px; align-items:flex-end; }
+.row2unten>.field{ flex:1; min-width:0; }
+.row2unten>.cond.on{ display:block; }
+.unit-wrap{ position:relative; }
+.unit-wrap input{ padding-right:38px; }
+.unit-wrap .u{ position:absolute; right:10px; top:9px; font-size:11.5px; color:#8a8f9a; pointer-events:none; }
+.cond{ display:none; } .cond.on{ display:block; }
+
+.kunde-zeile{ display:flex; gap:7px; align-items:stretch; }
+.kunde-zeile input{ flex:1; min-width:0; }
+.kunde-zeile .btn{ white-space:nowrap; padding:0 11px; }
+.kunde-box{ margin-top:10px; border:1px solid #cfe0ff; background:#f6f9ff;
+  border-radius:10px; padding:11px 12px 12px; }
+.kunde-titel{ font-size:11.5px; font-weight:700; color:#1c3d7a; margin-bottom:9px; }
+.kunde-titel span{ font-weight:500; color:#6a7fa8; }
+.kunde-box .field>label{ color:#4a5568; }
+.kunde-akt{ display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
+.kunde-akt .um{ margin-top:0; }
+
+/* ===== Anleitung ===== */
+.karten-kopf{ display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.karten-kopf .card-label{ flex:1; margin:0; }
+.anl-ruf{ appearance:none; border:1px solid #d3d7e0; background:#fff; color:#5b616c;
+  border-radius:20px; padding:4px 12px; font-family:inherit; font-size:11.5px;
+  font-weight:600; cursor:pointer; white-space:nowrap; margin-top:-3px; }
+.anl-ruf:hover{ border-color:#2f6fed; color:#2f6fed; }
+.anl-ruf:focus-visible{ outline:2px solid #2f6fed; outline-offset:2px; }
+.card.anl{ padding:22px 26px 26px; line-height:1.62; }
+.anl-kopf{ display:flex; gap:14px; align-items:flex-start; margin-bottom:14px; }
+.anl-kopf > div{ flex:1; }
+.anl h2{ font-size:20px; font-weight:700; letter-spacing:-.2px; margin:4px 0 0; }
+.anl-lead{ font-size:14px; color:#3d434d; margin:0 0 22px; max-width:72ch; }
+.anl-block{ border-top:1px solid #eceef3; padding-top:16px; margin-top:16px; }
+.anl-block h3{ font-size:14.5px; font-weight:650; margin:0 0 8px;
+  display:flex; align-items:center; gap:9px; }
+.anl-block h3 .nr{ display:grid; place-items:center; width:21px; height:21px; border-radius:6px;
+  background:#16181d; color:#fff; font-size:11px; font-weight:700; flex:none; }
+.anl-block p{ font-size:13.5px; color:#4a5058; margin:0 0 9px; max-width:74ch; }
+.anl-block ul{ margin:0 0 9px; padding-left:19px; }
+.anl-block li{ font-size:13.5px; color:#4a5058; margin-bottom:5px; max-width:72ch; }
+.anl-block b{ color:#1c1f25; font-weight:600; }
+.anl-merk{ background:#f6f7fa; border-left:3px solid #2f6fed; border-radius:0 7px 7px 0;
+  padding:9px 12px; font-size:12.5px !important; color:#4a5058 !important; }
+.anl-wichtig{ background:#fff9ea; border:1px solid #f0e3c0; border-radius:11px;
+  padding:16px 18px; margin-top:18px; }
+.anl-quelle{ font-size:11.5px !important; color:#9a8f70 !important; margin-bottom:10px !important; }
+
+/* ===== Fotos ===== */
+.fotos{ display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
+.foto-lb{ font-size:11.5px; font-weight:600; color:#5b616c; margin-bottom:5px; }
+.foto-feld{ display:flex; align-items:center; justify-content:center; height:74px;
+  border:1px dashed #cdd1da; border-radius:9px; cursor:pointer; background:#fff;
+  font-size:11.5px; color:#8a8f9a; text-align:center; padding:6px; transition:border-color .15s,color .15s; }
+.foto-feld:hover{ border-color:#2f6fed; color:#2f6fed; }
+.foto-feld:focus-within{ outline:2px solid #2f6fed; outline-offset:2px; }
+.foto-vor{ position:relative; border:1px solid #d3d7e0; border-radius:9px; overflow:hidden; background:#16181d; }
+.foto-vor.gesendet{ border-color:#1a7a3c; box-shadow:0 0 0 2px rgba(26,122,60,.16); }
+.foto-vor img{ display:block; width:100%; height:74px; object-fit:cover; }
+.foto-weg{ position:absolute; top:4px; right:4px; width:20px; height:20px; border:0; border-radius:6px;
+  background:rgba(22,24,29,.82); color:#fff; font-size:14px; line-height:1; cursor:pointer; padding:0; }
+.foto-weg:hover{ background:#c8102e; }
+.foto-gr{ position:absolute; left:0; right:0; bottom:0; padding:2px 5px; font-size:9.5px;
+  color:#fff; background:linear-gradient(transparent,rgba(0,0,0,.7)); }
+@media(max-width:520px){ .fotos{ grid-template-columns:1fr; } .foto-vor img,.foto-feld{ height:96px; } }
+.row2>.cond.on{ display:block; }
+
+.btn{ appearance:none; border:1px solid #cdd1da; background:#fff; color:#1c1f25; padding:9px 14px; border-radius:9px; font-size:13px; font-weight:550; cursor:pointer; transition:box-shadow .15s, background .15s; }
+.btn:hover{ box-shadow:0 1px 4px rgba(0,0,0,.09); }
+.btn:active{ transform:translateY(1px); }
+.btn[disabled]{ opacity:.55; cursor:default; }
+.btn.primary{ background:#c8102e; border-color:#a50d26; color:#fff; }
+.btn.primary:hover{ background:#b00d28; }
+.btn.sm{ padding:6px 11px; font-size:12px; }
+.btn:focus-visible{ outline:2px solid #2f6fed; outline-offset:2px; }
+
+.fussleiste{ padding:4px 14px 26px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.statuszeile{ flex-basis:100%; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.statuszeile:empty{ display:none; }
+.btn[hidden]{ display:none !important; }
+.status-msg{ font-size:12.5px; color:#5b616c; line-height:1.5; flex:0 1 auto; }
+.status-msg:empty{ display:none; }
+.aend-link{ appearance:none; border:0; background:none; padding:0; cursor:pointer;
+  font-family:inherit; font-size:12.5px; font-weight:600; line-height:1.5;
+  color:#2f6fed; text-decoration:underline; text-underline-offset:2px; white-space:nowrap; }
+.aend-link:hover{ color:#1c4fbf; }
+.aend-link:focus-visible{ outline:2px solid #2f6fed; outline-offset:2px; border-radius:3px; }
+.aend-link[disabled]{ color:#9aa0a9; text-decoration:none; cursor:default; }
+.aend-link[hidden]{ display:none !important; }
+.status-msg.ok{ color:#1a7a3c; font-weight:600; }
+.status-msg.bad{ color:#c8102e; font-weight:600; }
+.status-msg.warn{ color:#9a6b00; font-weight:600; }
+.dirty{ font-size:11px; color:#8a8f9a; margin-left:auto; }
+
+/* ===== SCHEMA ===== */
+.schema-panel{ flex:1; min-width:0; max-width:1080px; padding:28px 30px 40px; position:sticky; top:0; height:100vh; overflow:auto; display:flex; flex-direction:column; gap:16px; }
+.card{ background:#fff; border:1px solid #dcdfe6; border-radius:13px; padding:18px 20px 15px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+.card-label{ font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#8a8f9a; margin-bottom:12px; }
+#dia{ display:block; width:100%; height:auto; }
+
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:0 26px; }
+.kv{ display:flex; justify-content:space-between; gap:12px; padding:4px 0; font-size:12.5px; color:#5b616c; border-bottom:1px solid #f4f5f8; }
+.kv b{ color:#1c1f25; font-weight:600; font-variant-numeric:tabular-nums; }
+.kv.hl b{ color:#2f6fed; font-weight:700; }
+.kv.off b{ color:#b6bac2; font-weight:500; }
+.card .note{ font-size:11px; color:#8a8f9a; margin-top:10px; line-height:1.5; }
+
+.warnbox{ background:#fff6f7; border:1px solid #f0ced4; border-radius:9px; padding:9px 11px; font-size:11.5px; color:#8c1b2f; margin-top:10px; line-height:1.5; display:none; }
+.warnbox.on{ display:block; }
+
+@media(max-width:860px){
+  .app{ flex-direction:column; }
+  .editor{ width:100%; flex:1 1 auto; height:auto; position:static; }
+  .schema-panel{ position:static; height:auto; }
+}
+@media(prefers-reduced-motion:reduce){ *{ transition:none!important; } }
+/* ===== Kundenversion ===== */
+.hp{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+.merken{ display:flex; gap:9px; align-items:center; font-size:12.5px; color:#5b616c; margin:4px 0 6px; cursor:pointer; }
+.merken input{ width:17px; height:17px; accent-color:#c8102e; margin:0; }
+.anl-kurz .anl-block:first-of-type{ border-top:0; margin-top:4px; padding-top:4px; }
+.anl-kurz .anl-block h3{ font-size:13.5px; }
+.anl-kurz .anl-block p, .anl-kurz .anl-block li{ font-size:13px; }
+.anl-kurz .anl-wichtig{ padding:12px 14px; }
+
+.sendbar{ position:sticky; bottom:0; z-index:6; background:#fbfbfcf2; backdrop-filter:saturate(1.2) blur(4px);
+  border-top:1px solid #e6e8ee; padding:12px 14px; }
+.sendbar-in{ display:flex; gap:12px; align-items:center; justify-content:flex-end; }
+.sendbar .status-msg{ flex:1; min-width:0; }
+.sendbar .btn.primary{ padding:11px 18px; font-size:14px; font-weight:650; white-space:nowrap; }
+
+.fertig{ margin:16px 14px; text-align:center; padding:26px 20px 22px; }
+.fertig .haken{ width:52px; height:52px; border-radius:50%; background:#1a7a3c; color:#fff;
+  display:grid; place-items:center; font-size:26px; margin:0 auto 12px; }
+.fertig h2{ font-size:18px; margin:0 0 6px; }
+.fertig p{ font-size:13.5px; color:#4a5058; line-height:1.55; margin:0 auto 18px; max-width:30em; }
+.fertig-akt{ display:grid; gap:8px; }
+.fertig-akt .btn{ padding:12px 14px; font-size:14px; }
+
+#schema-karte.zu #dia{ display:none; }
+#schema-karte.zu .card-label{ margin-bottom:0; }
+
+/* ===== Mobil ===== */
+@media(max-width:860px){
+  body{ font-size:15px; }
+  .app{ display:flex; flex-direction:column; }
+  .editor, .schema-panel{ display:contents; }
+  .ed-head{ order:1; padding-top:calc(20px + env(safe-area-inset-top,0px)); }
+  #schema-karte{ order:2; position:sticky; top:0; z-index:20; margin:0; border-radius:0;
+    border-left:0; border-right:0; border-top:0; padding:10px 12px 8px;
+    padding-top:calc(10px + env(safe-area-inset-top,0px)); box-shadow:0 3px 10px rgba(0,0,0,.08); }
+  #schema-karte .karten-kopf{ margin-bottom:6px; align-items:center; }
+  #schema-karte .anl-ruf{ margin-top:0; }
+  #dia{ max-height:34vh; }
+  #ansicht-formular{ order:3; }
+  #fertig{ order:3; }
+  #rechen-karte{ order:4; margin:0 14px 18px; }
+  .sendbar{ order:5; position:fixed; left:0; right:0; bottom:0;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px)); background:#fbfbfcf7; }
+  .sendbar .btn.primary{ min-height:48px; flex:none; }
+  body{ padding-bottom:calc(84px + env(safe-area-inset-bottom,0px)); }
+  .sections{ padding:4px 12px 16px; }
+  details.sec>summary{ padding:15px 14px; font-size:14.5px; }
+  .field>label{ font-size:12.5px; }
+  .field input, .field textarea, .field select{ font-size:16px; padding:11px 11px; min-height:46px; }
+  .unit-wrap .u{ top:13px; font-size:12.5px; }
+  .row2, .row2unten{ gap:8px; }
+}
+@media(max-width:360px){
+  .row2{ flex-direction:column; gap:0; }
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="editor">
+  <div class="ed-head">
+    <div class="ed-keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <h1>Basssaite bestellen<span class="dot">.</span></h1>
+    <p class="sub">Pianos Sulzener · Klavierbau Bern<br>Eine Saite pro Bestellung</p>
+  </div>
+
+  <div id="ansicht-formular">
+  <form id="order" novalidate autocomplete="on">
+  <div class="sections">
+
+    <!-- ===== ANLEITUNG ===== -->
+    <details class="sec" id="sec-anleitung">
+      <summary><span class="ico">📖</span> So misst du die Saite aus<span class="chev">›</span></summary>
+      <div class="sec-body anl-kurz">
+        <p class="spin-note">Pflicht sind nur deine Kontaktangaben, eine Bezeichnung, Ø Gesamt und Ø Kern. Alles Weitere verbessert das Ergebnis. Was du offen lässt, kläre ich mit dir.</p>
+        <div class="anl-block">
+          <h3><span class="nr">1</span> Durchmesser in Mikrometern</h3>
+          <p>1,275 mm sind <b>1275</b> µm. Am besten mit der Bügelmessschraube messen, nicht mit dem Messschieber.</p>
+          <ul>
+            <li><b>Ø Gesamt</b>: über der Umspinnung, in der Mitte der Saite, wo sie am dicksten ist.</li>
+            <li><b>Ø Kern</b>: am blanken Stahl, ausserhalb der Umspinnung.</li>
+            <li><b>Ø Umspunnstanfang</b>: nur bei doppelt umsponnenen Saiten, an der dünneren Stelle, wo erst eine Lage liegt.</li>
+          </ul>
+        </div>
+        <div class="anl-block">
+          <h3><span class="nr">2</span> Längen ab Ösenhinterkante, in Millimetern</h3>
+          <p>Gemessen wird ab <b>Ösenhinterkante</b> bis dorthin, wo das <b>Kupfer</b> beginnt oder aufhört. Die Buchstaben im Formular stehen genauso in der Zeichnung.</p>
+          <ul>
+            <li><b>Einfach umsponnen:</b> A bis zum Kupferanfang, B bis zum Kupferende.</li>
+            <li><b>Doppelt umsponnen:</b> A und D für die lange durchgehende Lage, B und C für die dicke Lage in der Mitte.</li>
+            <li><b>Messzustand:</b> gespannt im Instrument oder ungespannt. Eine gespannte Saite misst länger.</li>
+          </ul>
+        </div>
+        <div class="anl-block">
+          <h3><span class="nr">3</span> Öse, Ringe und Enden</h3>
+          <ul>
+            <li><b>Anzahl Ringe nach Öse</b>: die engen Windungen direkt hinter der Öse.</li>
+            <li><b>Länge der Zopföse</b>: von der Ösenhinterkante bis zum ersten Ring.</li>
+            <li><b>Kupferanfang und -ende</b>: normal, angefräst oder französisches Ende (dann mit Länge).</li>
+            <li><b>Spinnrichtung</b>: schau dir die Schraffur in der Zeichnung an, sie kippt mit deiner Auswahl.</li>
+          </ul>
+        </div>
+        <div class="anl-block">
+          <h3><span class="nr">4</span> Fotos helfen</h3>
+          <p>Ein Foto von Öse, Kupferanfang und Kupferende klärt fast jede Unklarheit. Saite auf einen ruhigen, dunklen Untergrund legen und von oben aufnehmen. Die Bilder werden vor dem Senden verkleinert.</p>
+        </div>
+        <div class="anl-block anl-wichtig">
+          <h3><span class="nr">5</span> Beim Aufziehen: Saite drehen</h3>
+          <p class="anl-quelle">Sinngemäss nach den Angaben von Heller Pianosaiten.</p>
+          <p>Empfohlen sind <b>zwei volle Umdrehungen</b> bei einfach und <b>eine halbe Umdrehung</b> bei doppelt umsponnenen Saiten. Da das Kupfer nach links ansteigt, wird nach rechts gedreht, also <b>im Uhrzeigersinn</b>. Ob man ober- oder unterhalb des Instruments steht, ändert nichts an der Drehrichtung.</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- ===== BESTELLER ===== -->
+    <details class="sec" open>
+      <summary><span class="ico">👤</span> Deine Angaben<span class="chev">›</span></summary>
+      <div class="sec-body">
+        <div class="field">
+          <label for="firma">Firma / Name <span class="req">*</span></label>
+          <input id="firma" name="firma" type="text" required autocomplete="organization">
+          <div class="err">Bitte ausfüllen.</div>
+        </div>
+        <div class="field">
+          <label for="person">Ansprechperson</label>
+          <input id="person" name="person" type="text" autocomplete="name">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="email">E-Mail <span class="req">*</span></label>
+            <input id="email" name="email" type="email" required inputmode="email" autocomplete="email" autocapitalize="off">
+            <div class="err">Gültige E-Mail angeben.</div>
+          </div>
+          <div class="field">
+            <label for="telefon">Telefon <span class="req">*</span></label>
+            <input id="telefon" name="telefon" type="tel" required inputmode="tel" autocomplete="tel" placeholder="+41 …">
+            <div class="err">Telefonnummer angeben.</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="adresse">Lieferadresse</label>
+          <input id="adresse" name="adresse" type="text" autocomplete="street-address" placeholder="Strasse und Nummer">
+        </div>
+        <div class="field">
+          <label for="plzOrt">PLZ &amp; Ort</label>
+          <input id="plzOrt" name="plzOrt" type="text" autocomplete="postal-code" placeholder="3006 Bern">
+        </div>
+        <label class="merken"><input type="checkbox" id="merken" checked> Angaben auf diesem Gerät merken</label>
+      </div>
+    </details>
+
+    <!-- ===== SAITE ===== -->
+    <details class="sec" open>
+      <summary><span class="ico">🎼</span> Saite<span class="chev">›</span></summary>
+      <div class="sec-body">
+        <div class="field">
+          <label for="name">Bezeichnung <span class="req">*</span> <span class="nprop">· Instrument, Ton</span></label>
+          <input id="name" name="name" type="text" required placeholder="Burger &amp; Jacobi Klavier, A0">
+          <div class="err">Bitte ausfüllen.</div>
+        </div>
+        <div class="field">
+          <label for="anzahl">Anzahl Saiten</label>
+          <input id="anzahl" name="anzahl" type="number" inputmode="numeric" min="1" step="1" value="1">
+        </div>
+      </div>
+    </details>
+
+    <!-- ===== AUFBAU ===== -->
+    <details class="sec" open>
+      <summary><span class="ico">🧵</span> Aufbau &amp; Öse<span class="chev">›</span></summary>
+      <div class="sec-body">
+        <div class="row2">
+          <div class="field">
+            <label>Umspunnst</label>
+            <select id="umspunnst" name="umspunnst"><option value="">–</option><option value="Einfach" selected>Einfach</option><option value="Doppelt">Doppelt</option></select>
+          </div>
+          <div class="field">
+            <label>Kernart</label>
+            <select id="kernart" name="kernart"><option value="">–</option><option value="Runddraht">Runddraht</option><option value="Sechskantdraht">Sechskantdraht</option></select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Ösenart</label>
+            <select id="oesenart" name="oesenart"><option value="">–</option><option value="Handöse" selected>Handöse</option><option value="doppelte Handöse">doppelte Handöse</option><option value="Zopföse">Zopföse</option></select>
+          </div>
+          <div class="field">
+            <label>Ösen Richtung</label>
+            <select id="oesenRichtung" name="oesenRichtung"><option value="">–</option><option value="rechts nach links">rechts steigend (rechts nach links)</option><option value="links nach rechts">links steigend (links nach rechts)</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Spinnrichtung vom Kupfer</label>
+          <select id="spinnrichtung" name="spinnrichtung"><option value="">–</option><option value="von links oben nach rechts unten">rechts steigend (von links oben nach rechts unten)</option><option value="von links unten nach rechts oben">links steigend (von links unten nach rechts oben)</option></select>
+        </div>
+        <div class="row2unten">
+          <div class="field">
+            <label>Anzahl Ringe nach Öse</label>
+            <input id="ringe" name="ringe" type="number" inputmode="numeric" step="1" min="0">
+          </div>
+          <div class="field cond" id="c-zopf">
+            <label>Länge der Zopföse <span class="nprop">(Ösenhinterkante bis erster Ring)</span></label>
+            <div class="unit-wrap"><input id="lZopf" name="lZopf" type="number" inputmode="decimal" step="0.5" min="0"><span class="u">mm</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ===== DURCHMESSER ===== -->
+    <details class="sec" open>
+      <summary><span class="ico">📐</span> Durchmesser<span class="chev">›</span></summary>
+      <div class="sec-body">
+        <div class="row2">
+          <div class="field" id="f-dGesamt">
+            <label>Ø Gesamt <span class="req">*</span></label>
+            <div class="unit-wrap"><input id="dGesamt" name="dGesamt" type="number" inputmode="numeric" step="5" min="300" max="12000" required placeholder="z.B. 1400"><span class="u">µm</span></div>
+            <div class="um" id="um-dGesamt">–</div>
+            <div class="err">Muss grösser sein als Ø Kern.</div>
+          </div>
+          <div class="field" id="f-dKern">
+            <label>Ø Kern <span class="req">*</span></label>
+            <div class="unit-wrap"><input id="dKern" name="dKern" type="number" inputmode="numeric" step="5" min="300" max="4000" required placeholder="z.B. 1000"><span class="u">µm</span></div>
+            <div class="um" id="um-dKern">–</div>
+            <div class="err">Bitte ausfüllen.</div>
+          </div>
+        </div>
+        <div class="field cond" id="c-dUmspAnfang">
+          <label>Ø Umspunnstanfang <span class="nprop">· nur bei Doppelt · die dünnere Stelle</span></label>
+          <div class="unit-wrap"><input id="dUmspAnfang" name="dUmspAnfang" type="number" inputmode="numeric" step="5" placeholder="z.B. 4850"><span class="u">µm</span></div>
+          <div class="um" id="um-dUmspAnfang">–</div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ===== ENDEN ===== -->
+    <details class="sec" open>
+      <summary><span class="ico">✂️</span> Kupferenden<span class="chev">›</span></summary>
+      <div class="sec-body">
+        <div class="row2">
+          <div class="field">
+            <label>Kupferanfang <span class="nprop">(A-Mass)</span></label>
+            <select id="kupferanfang" name="kupferanfang"><option value="">–</option><option value="Normal" selected>Normal</option><option value="angefräst">angefräst</option><option value="französisches Ende">französisches Ende</option></select>
+          </div>
+          <div class="field">
+            <label>Kupferende <span class="nprop">(B-Mass)</span></label>
+            <select id="kupferende" name="kupferende"><option value="">–</option><option value="Normal" selected>Normal</option><option value="angefräst">angefräst</option><option value="französisches Ende">französisches Ende</option></select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field cond" id="c-frzAnfang">
+            <label>Länge französischer Anfang</label>
+            <div class="unit-wrap"><input id="lFrzAnfang" name="lFrzAnfang" type="number" inputmode="decimal" step="0.5" min="0"><span class="u">mm</span></div>
+          </div>
+          <div class="field cond" id="c-frzEnde">
+            <label>Länge französisches Ende</label>
+            <div class="unit-wrap"><input id="lFrzEnde" name="lFrzEnde" type="number" inputmode="decimal" step="0.5" min="0"><span class="u">mm</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ===== ANHANGSTIFT ===== -->
+    <details class="sec" open>
+      <summary><span class="ico">📏</span> Anhangstift-Masse<span class="chev">›</span></summary>
+      <div class="sec-body">
+        <div class="field">
+          <label>Messzustand</label>
+          <select id="messzustand" name="messzustand">
+            <option value="">– nicht angegeben –</option>
+            <option value="gespannt (im Instrument)">gespannt (im Instrument)</option>
+            <option value="ungespannt (ausserhalb)">ungespannt (ausserhalb)</option>
+          </select>
+        </div>
+        <p class="spin-note">Die Buchstaben stehen so auch in der Zeichnung. Gemessen ab <b>Ösenhinterkante</b> bis zum <b>Kupfer</b>.</p>
+
+        <div class="cond" id="c-anhEinfach">
+          <div class="row2">
+            <div class="field">
+              <label><span class="mk">A</span> zu Umspunnst unten</label>
+              <div class="unit-wrap"><input id="anhUnten" name="anhUnten" type="number" inputmode="decimal" step="0.1"><span class="u">mm</span></div>
+            </div>
+            <div class="field">
+              <label><span class="mk">B</span> zu Umspunnst oben</label>
+              <div class="unit-wrap"><input id="anhOben" name="anhOben" type="number" inputmode="decimal" step="0.1"><span class="u">mm</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cond" id="c-anhDoppelt">
+          <div class="row2">
+            <div class="field">
+              <label><span class="mk">A</span> zu Oberumspunnst unten</label>
+              <div class="unit-wrap"><input id="oberUnten" name="oberUnten" type="number" inputmode="decimal" step="0.1"><span class="u">mm</span></div>
+            </div>
+            <div class="field">
+              <label><span class="mk">B</span> zu Unterumspunnst unten</label>
+              <div class="unit-wrap"><input id="unterUnten" name="unterUnten" type="number" inputmode="decimal" step="0.1"><span class="u">mm</span></div>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label><span class="mk">C</span> zu Unterumspunnst oben</label>
+              <div class="unit-wrap"><input id="unterOben" name="unterOben" type="number" inputmode="decimal" step="0.1"><span class="u">mm</span></div>
+            </div>
+            <div class="field">
+              <label><span class="mk">D</span> zu Oberumspunnst oben</label>
+              <div class="unit-wrap"><input id="oberOben" name="oberOben" type="number" inputmode="decimal" step="0.1"><span class="u">mm</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ===== FOTOS ===== -->
+    <details class="sec">
+      <summary><span class="ico">📷</span> Detailfotos <span class="cnt" id="foto-cnt">0</span><span class="chev">›</span></summary>
+      <div class="sec-body">
+        <p class="spin-note">Freiwillig, aber sehr hilfreich. Grosse Aufnahmen werden vor dem Senden verkleinert, HEIC vom iPhone wird umgewandelt.</p>
+        <div class="fotos">
+          <div class="foto" data-slot="oese">
+            <div class="foto-lb">Öse</div>
+            <label class="foto-feld"><input type="file" accept="image/*,.heic,.heif,.HEIC,.HEIF" hidden><span>Foto aufnehmen oder wählen</span></label>
+            <div class="foto-vor" hidden><img alt="Foto Öse"><button type="button" class="foto-weg" title="Entfernen">×</button><span class="foto-gr"></span></div>
+          </div>
+          <div class="foto" data-slot="kupferanfang">
+            <div class="foto-lb">Kupferanfang</div>
+            <label class="foto-feld"><input type="file" accept="image/*,.heic,.heif,.HEIC,.HEIF" hidden><span>Foto aufnehmen oder wählen</span></label>
+            <div class="foto-vor" hidden><img alt="Foto Kupferanfang"><button type="button" class="foto-weg" title="Entfernen">×</button><span class="foto-gr"></span></div>
+          </div>
+          <div class="foto" data-slot="kupferende">
+            <div class="foto-lb">Kupferende</div>
+            <label class="foto-feld"><input type="file" accept="image/*,.heic,.heif,.HEIC,.HEIF" hidden><span>Foto aufnehmen oder wählen</span></label>
+            <div class="foto-vor" hidden><img alt="Foto Kupferende"><button type="button" class="foto-weg" title="Entfernen">×</button><span class="foto-gr"></span></div>
+          </div>
+        </div>
+        <p class="spin-note" id="foto-hinweis" style="margin:12px 0 0"></p>
+      </div>
+    </details>
+
+    <!-- ===== NOTIZ ===== -->
+    <details class="sec">
+      <summary><span class="ico">📝</span> Bemerkungen<span class="chev">›</span></summary>
+      <div class="sec-body">
+        <div class="field">
+          <label for="notiz">Bemerkungen <span class="nprop">· Termin, Versand, Besonderheiten</span></label>
+          <textarea id="notiz" name="notiz"></textarea>
+        </div>
+        <div class="hp" aria-hidden="true"><label>Website <input id="website" name="website" tabindex="-1" autocomplete="off"></label></div>
+      </div>
+    </details>
+
+    <!-- automatisch berechnet, nicht sichtbar -->
+    <input type="hidden" id="stahlnummer"><input type="hidden" id="kupfernummer">
+    <input type="hidden" id="kupferOber"><input type="hidden" id="kupferUnter">
+  </div>
+  </form>
+  </div>
+
+  <div class="card fertig" id="fertig" hidden>
+    <div class="haken">✓</div>
+    <h2>Bestellung gesendet</h2>
+    <p id="fertig-text"></p>
+    <div class="fertig-akt">
+      <button type="button" class="btn primary" id="btn-weitere">Weitere Saite bestellen</button>
+      <button type="button" class="btn" id="btn-leer">Neue Bestellung, leeres Formular</button>
+    </div>
+  </div>
+
+  <div class="sendbar" id="sendbar">
+    <div class="sendbar-in">
+      <div class="status-msg" id="status" role="status" aria-live="polite"></div>
+      <button type="submit" form="order" class="btn primary" id="btn-senden">Bestellung senden</button>
+    </div>
+  </div>
+</aside>
+
+<main class="schema-panel">
+  <div class="card" id="schema-karte">
+    <div class="karten-kopf">
+      <div class="card-label">Schema — nicht massstäblich</div>
+      <button type="button" class="anl-ruf" id="btn-schema" aria-expanded="true">Ausblenden</button>
+    </div>
+    <svg id="dia" viewBox="0 0 540 300" role="img" aria-label="Schematische Darstellung der Saite"></svg>
+  </div>
+
+  <div class="card" id="rechen-karte">
+    <div class="card-label">Berechnet</div>
+    <div id="calc"></div>
+    <div class="warnbox" id="warn"></div>
+    <div class="note">Ø Kupfer = (Ø aussen − Ø innen) / 2 +6% · Stahlnummer = Ø Kern / 50 − 2.5 · Kupfernummer: Ø Kupfer <code id="regel-label"></code>.</div>
+  </div>
+
+</main>
+
+</div>
+
+<script>
+/* ============================================================
+   Basssaite bestellen — Pianos Sulzener (Kundenversion)
+   Durchmesser in µm, Längen in mm — wie in der internen Erfassung.
+   ============================================================ */
+const ENDPOINT = "https://basssaite-bestellung.tonisulzener.workers.dev";   // eigener Worker nur für Bestellungen
+const LS_KONTAKT = "sulzener.bestellung.kontakt";
+const LS_ENTWURF = "sulzener.bestellung.entwurf";
+
+const $ = id => document.getElementById(id);
+const form = $("order");
+
+/* Felder der Saite (gleiche Schlüssel wie in der internen Erfassung) */
+const FELDER = ["name","dGesamt","dKern","dUmspAnfang","umspunnst","kernart","oesenart",
+  "oesenRichtung","spinnrichtung","ringe","lZopf","kupferanfang","kupferende","lFrzAnfang",
+  "lFrzEnde","stahlnummer","kupfernummer","kupferUnter","kupferOber","anhOben","anhUnten",
+  "unterOben","unterUnten","oberOben","oberUnten","messzustand"];
+const KONTAKT = ["firma","person","email","telefon","adresse","plzOrt"];
+
+/* ---------- bedingte Felder ---------- */
+const istDoppelt = () => $("umspunnst").value === "Doppelt";
+const conds = [
+  ["c-dUmspAnfang",   istDoppelt],
+  ["c-anhDoppelt",    istDoppelt],
+  ["c-anhEinfach",    () => !istDoppelt()],
+  ["c-zopf",          () => $("oesenart").value === "Zopföse"],
+  ["c-frzAnfang",     () => $("kupferanfang").value === "französisches Ende"],
+  ["c-frzEnde",       () => $("kupferende").value === "französisches Ende"]
+];
+function syncConds(){
+  conds.forEach(([id,test]) => {
+    const el = $(id), on = test();
+    el.classList.toggle("on", on);
+    if(!on) el.querySelectorAll("input").forEach(i => i.value = "");
+  });
+  /* Kupfernummer-Felder der nicht gewählten Bauart leeren */
+  if(istDoppelt()) $("kupfernummer").value = "";
+  else { $("kupferOber").value = ""; $("kupferUnter").value = ""; }
+}
+
+/* ---------- Rechnen (alles in µm) ---------- */
+const stahlnummer = kernUm => isFinite(kernUm)&&kernUm>0 ? Math.round((kernUm/50 - 2.5)*2)/2 : null;
+const oKupfer = (aussen, innen) =>
+  isFinite(aussen)&&isFinite(innen)&&aussen>innen ? (aussen-innen)/2 : null;
+
+/* ===== Kupfernummer =====================================================
+   Rechenweg von Toni:
+     1. Kupferstärke  = (Ø Gesamt − Ø Kern) / 2
+     2. plus 6 %      (die Windung bettet sich in den Kern ein)
+     3. auf 50 µm kaufmännisch runden
+     4. eine Stelle weniger  → die Kupfernummer
+   Beispiele: 548 µm → 550 → 55 · 520 µm → 500 → 50
+   Dadurch entstehen zwangsläufig nur 5er-Schritte.                     */
+const KUPFER_REGEL = { zuschlag:1.06, raster:50,
+                       label:"auf 50 µm gerundet, /10" };
+function kupferMitZuschlag(um){          // Schritt 1–2
+  return isFinite(um) && um > 0 ? um * KUPFER_REGEL.zuschlag : null;
+}
+function kupfernummer(um){               // Schritte 1–4
+  const r = kupferMitZuschlag(um);
+  if(r === null) return null;
+  return Math.round(r / KUPFER_REGEL.raster) * KUPFER_REGEL.raster / 10;
+}
+
+let stahlBeruehrt = false, kupferBeruehrt = {};
+["kupfernummer","kupferUnter","kupferOber"].forEach(id =>
+  $(id).addEventListener("input", () => { kupferBeruehrt[id] = true; }));
+$("stahlnummer").addEventListener("input", () => { stahlBeruehrt = true; });
+
+function calc(){
+  const kern = parseFloat($("dKern").value);
+  const ges  = parseFloat($("dGesamt").value);
+  const uAnf = parseFloat($("dUmspAnfang").value);
+  const dop  = istDoppelt();
+  const st   = stahlnummer(kern);
+  const rows = [];
+  const em   = "\u2014";
+  const auto = {};
+
+  rows.push(["Stahlnummer", st!==null ? st.toFixed(1) : em, st!==null]);
+
+  if(dop){
+    // Oberumspunnst = die lange dünne Lage: Kern → Ø Umspunnstanfang
+    // Unterumspunnst = die dicke Lage in der Mitte: Umspunnstanfang → Ø Gesamt
+    const xo = oKupfer(uAnf, kern), xu = oKupfer(ges, uAnf);
+    const no = xo!==null ? kupfernummer(xo) : null;
+    const nu = xu!==null ? kupfernummer(xu) : null;
+    rows.push(["Ø Kupfer Ober", xo!==null ? Math.round(kupferMitZuschlag(xo))+" µm" : em, xo!==null]);
+    rows.push(["Kupfernummer Ober", no!==null ? String(no) : em, no!==null]);
+    rows.push(["Ø Kupfer Unter", xu!==null ? Math.round(kupferMitZuschlag(xu))+" µm" : em, xu!==null]);
+    rows.push(["Kupfernummer Unter", nu!==null ? String(nu) : em, nu!==null]);
+    auto.kupferOber = no; auto.kupferUnter = nu;
+  } else {
+    const x = oKupfer(ges, kern);
+    const n = x!==null ? kupfernummer(x) : null;
+    rows.push(["Ø Kupfer", x!==null ? Math.round(kupferMitZuschlag(x))+" µm" : em, x!==null]);
+    rows.push(["Kupfernummer", n!==null ? String(n) : em, n!==null]);
+    auto.kupfernummer = n;
+  }
+
+  $("calc").innerHTML = rows.map(r =>
+    `<div class="kv ${r[2]?"hl":"off"}"><span>${r[0]}</span><b>${r[1]}</b></div>`).join("");
+
+  if(!stahlBeruehrt) $("stahlnummer").value = st!==null ? st : "";
+  Object.entries(auto).forEach(([id,n]) => {
+    if(!kupferBeruehrt[id]) $(id).value = n!==null ? n : "";
+  });
+
+  /* Plausibilität */
+  const w = [];
+  const eingSt = parseFloat($("stahlnummer").value);
+  if(st!==null && isFinite(eingSt) && Math.abs(eingSt-st) > 0.01)
+    w.push(`Stahlnummer weicht ab: eingetragen ${eingSt}, gerechnet ${st.toFixed(1)}.`);
+  if(isFinite(ges)&&isFinite(kern)&&ges<=kern)
+    w.push("Ø Gesamt ist nicht grösser als Ø Kern.");
+  if(dop&&isFinite(uAnf)&&isFinite(kern)&&isFinite(ges)&&!(kern<uAnf&&uAnf<ges))
+    w.push("Ø Umspunnstanfang muss zwischen Ø Kern und Ø Gesamt liegen.");
+  Object.entries(auto).forEach(([id,n]) => {
+    const v = parseFloat($(id).value);
+    if(kupferBeruehrt[id] && n!==null && isFinite(v) && v!==n)
+      w.push(`${$(id).closest(".field").querySelector("label").textContent.split("·")[0].trim()}: eingetragen ${v}, Regel ergibt ${n}.`);
+  });
+  $("warn").className = "warnbox" + (w.length ? " on" : "");
+  $("warn").innerHTML = w.join("<br>");
+}
+
+/* ---------- mm-Anzeige unter den µm-Feldern ---------- */
+function umLabels(){
+  ["dGesamt","dKern","dUmspAnfang"].forEach(id => {
+    const v = parseFloat($(id).value);
+    $("um-"+id).textContent = isFinite(v) ? "= " + (v/1000).toFixed(3) + " mm" : "–";
+  });
+}
+
+/* ============================================================
+   ZEICHNUNG
+   ============================================================ */
+const NS = "http://www.w3.org/2000/svg";
+function draw(){
+  const svg = $("dia");
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+  const kern = parseFloat($("dKern").value)      || 1000;
+  const ges  = parseFloat($("dGesamt").value)    || 1400;
+  const uAnfV= parseFloat($("dUmspAnfang").value);
+  const dop  = istDoppelt();
+  const oese = $("oesenart").value || "Handöse";
+  const spinn= $("spinnrichtung").value;
+  const kart = $("kernart").value;
+  const kAnf = $("kupferanfang").value;
+  const kEnd = $("kupferende").value;
+  const ringe= parseInt($("ringe").value,10);
+  const mZus = $("messzustand").value;
+
+  const add = (t,a) => { const e=document.createElementNS(NS,t);
+    for(const k in a) e.setAttribute(k,a[k]); svg.appendChild(e); return e; };
+  /* 1230.0 -> "1230", 12.5 -> "12.5" */
+  const nz = v => String(Math.round(v*10)/10);
+  const txt = (x,y,s,o={}) => { const t=add("text",{x,y,
+    "font-family":"system-ui,sans-serif","font-size":o.size||9.5,
+    "font-weight":o.w||400, fill:o.fill||"#5b616c",
+    "text-anchor":o.anchor||"start"}); t.textContent=s; return t; };
+
+  /* ---- Masszeilen liegen jetzt ÜBER der Saite ---- */
+  const masse = dop
+    ? [["A","oberUnten"], ["B","unterUnten"], ["C","unterOben"], ["D","oberOben"]]
+    : [["A","anhUnten"],  ["B","anhOben"]];
+  const zeile = 18, topPad = 16;
+  const cy = topPad + masse.length*zeile + 26;
+
+  const sc = h => Math.max(4, Math.min(58, h/1000*9.5));
+  const kh = sc(kern);
+  const gh = Math.max(kh+7, sc(ges));
+  const ih = dop
+    ? (isFinite(uAnfV)&&uAnfV>kern&&uAnfV<ges ? Math.max(kh+4, Math.min(gh-4, sc(uAnfV))) : kh+(gh-kh)*0.5)
+    : gh;
+
+  const oCx=44, oRx=19, x0=66, x1=430;
+  const iS=116, iE=372;      // lange dünne Lage  → Oberumspunnst
+  const aS=158, aE=330;      // dicke Lage Mitte  → Unterumspunnst
+
+  /* Nullpunkt der Masse: immer die Ösenhinterkante */
+  const nullX = oCx - oRx;
+
+  /* ---- Schraffur ---- */
+  const ang = (spinn === "von links unten nach rechts oben") ? 32 : -32;
+  const defs = add("defs",{});
+  const pat = (id,col) => {
+    const p=document.createElementNS(NS,"pattern");
+    p.setAttribute("id",id); p.setAttribute("width","7"); p.setAttribute("height","7");
+    p.setAttribute("patternUnits","userSpaceOnUse");
+    p.setAttribute("patternTransform","rotate("+ang+")");
+    const b=document.createElementNS(NS,"rect");
+    b.setAttribute("width","7"); b.setAttribute("height","7"); b.setAttribute("fill",col);
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("x1","0"); l.setAttribute("y1","0");
+    l.setAttribute("x2","0"); l.setAttribute("y2","7");
+    l.setAttribute("stroke","rgba(0,0,0,.24)"); l.setAttribute("stroke-width","2");
+    p.appendChild(b); p.appendChild(l); defs.appendChild(p);
+  };
+  pat("pInnen","#c87941"); pat("pAussen","#a0522d");
+
+  /* ---- Stahlkern ---- */
+  add("rect",{x:x0,y:cy-kh/2,width:x1-x0,height:kh,fill:"#9aabb5"});
+  if(kart === "Sechskantdraht"){
+    add("line",{x1:x0,y1:cy-kh/6,x2:x1,y2:cy-kh/6,stroke:"#6d818c","stroke-width":.7});
+    add("line",{x1:x0,y1:cy+kh/6,x2:x1,y2:cy+kh/6,stroke:"#6d818c","stroke-width":.7});
+  }
+  add("rect",{x:x0,y:cy-kh/2,width:x1-x0,height:kh,fill:"none",stroke:"#4e6a78","stroke-width":.8});
+
+  /* ---- Umspinnungen ----
+     Kupferanfang und Kupferende gehören zur durchgehenden Kupferlage
+     (iS…iE). "angefräst" heisst: das Kupfer ist dort bis auf den Kern
+     heruntergearbeitet — die Lage läuft schräg aus. */
+  const frAnf = kAnf === "angefräst", frEnd = kEnd === "angefräst";
+  const tp = Math.min(16, (iE-iS)/5);          // Länge der Fräsung
+
+  const bandPfad = (xa, xb, h, sa, sb) => {
+    const hk = kh/2;
+    let d = sa ? `M${xa} ${cy-hk} L${xa+tp} ${cy-h}` : `M${xa} ${cy-h}`;
+    d += ` L${sb ? xb-tp : xb} ${cy-h}`;
+    d += sb ? ` L${xb} ${cy-hk} L${xb} ${cy+hk} L${xb-tp} ${cy+h}` : ` L${xb} ${cy+h}`;
+    d += ` L${sa ? xa+tp : xa} ${cy+h}`;
+    if(sa) d += ` L${xa} ${cy+hk}`;
+    return d + " Z";
+  };
+
+  const pfad = bandPfad(iS, iE, ih/2, frAnf, frEnd);
+  add("path",{d:pfad, fill:"url(#pInnen)"});
+  add("path",{d:pfad, fill:"none", stroke:"#8a4a1e","stroke-width":.9,"stroke-linejoin":"round"});
+  if(dop){
+    add("rect",{x:aS,y:cy-gh/2,width:aE-aS,height:gh,fill:"url(#pAussen)"});
+    add("rect",{x:aS,y:cy-gh/2,width:aE-aS,height:gh,fill:"none",stroke:"#7a3010","stroke-width":.9});
+  }
+
+  /* ---- Französisches Ende: nach aussen, neben der Lage ---- */
+  const frz = (x, art, links) => {
+    if(art !== "französisches Ende") return;
+    const h = ih/2, s = links ? -1 : 1, L = 17;
+    add("path",{d:`M${x} ${cy-h-4} l${s*L} 0 l0 ${2*h+8} l${-s*L} 0`,
+                fill:"none",stroke:"#7a3010","stroke-width":1.4,"stroke-dasharray":"3 2"});
+    txt(x + s*L - (links?0:0), cy-h-9, "frz.",
+        {fill:"#7a3010", size:8.5, anchor: links ? "start" : "end"});
+  };
+  frz(iS, kAnf, true);
+  frz(iE, kEnd, false);
+
+  /* ---- Öse ----
+     Zopföse: Schlaufe, dahinter der zurückgeführte Draht um den Kern
+     geflochten. Die engen Ringe danach kommen aus "Anzahl Ringe nach Öse". */
+  let nachOese = x0 + 7;
+  if(oese === "Zopföse"){
+    const zTip = oCx - oRx, zKreuz = oCx + 8, zLang = 34;
+    const amp  = Math.max(3.2, kh/2 + 1.4);
+    /* Schlaufe */
+    add("path",{d:`M${zKreuz} ${cy} C${zKreuz-20} ${cy-17} ${zTip} ${cy-13} ${zTip} ${cy}`
+                 + ` C${zTip} ${cy+13} ${zKreuz-20} ${cy+17} ${zKreuz} ${cy}`,
+                fill:"none",stroke:"#1c1f25","stroke-width":2.2,"stroke-linecap":"round"});
+    /* Geflecht: zwei gegenläufige Stränge um den Kern */
+    const strang = vz => {
+      let d = "", n = 60, halbwellen = 6;
+      for(let i=0;i<=n;i++){
+        const t = i/n, x = zKreuz + t*zLang;
+        const y = cy + vz*amp*Math.sin(t*Math.PI*halbwellen);
+        d += (i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1);
+      }
+      return d;
+    };
+    add("path",{d:strang( 1),fill:"none",stroke:"#1c1f25","stroke-width":1.5,"stroke-linecap":"round"});
+    add("path",{d:strang(-1),fill:"none",stroke:"#5b6670","stroke-width":1.5,"stroke-linecap":"round"});
+    nachOese = zKreuz + zLang + 5;
+  } else {
+    add("ellipse",{cx:oCx,cy,rx:oRx,ry:11,fill:"none",stroke:"#1c1f25","stroke-width":2.4});
+    if(oese === "doppelte Handöse")
+      add("ellipse",{cx:oCx,cy,rx:12.5,ry:6.5,fill:"none",stroke:"#1c1f25","stroke-width":1.6});
+  }
+
+  /* ---- Ringe nach Öse ---- */
+  let ringEnde = Math.max(x0 + 10, nachOese + 3);
+  if(isFinite(ringe) && ringe > 0){
+    const n = Math.min(ringe, 9);
+    /* Ringe müssen zwischen Öse und Umspinnung Platz finden */
+    const platz = iS - 10 - nachOese;
+    const ab = n > 1 ? Math.min(5.5, platz/(n-1)) : 0;
+    for(let i=0;i<n;i++)
+      add("ellipse",{cx:nachOese+i*ab, cy, rx:1.7, ry:kh/2+2.5,
+                     fill:"none", stroke:"#4e6a78","stroke-width":1});
+    ringEnde = Math.min(nachOese + (n-1)*ab + 9, iS - 8);
+  }
+
+  /* ================= MASSE ÜBER DER SAITE ================= */
+  /* Nullpunkt-Achse */
+  add("line",{x1:nullX,y1:topPad-4,x2:nullX,y2:cy+16,
+              stroke:"#2f6fed","stroke-width":.7,"stroke-dasharray":"3 3"});
+  add("circle",{cx:nullX,cy:cy,r:2,fill:"#2f6fed"});
+
+  masse.forEach(([lb, feld], k) => {
+    const xz = dop ? [iS,aS,aE,iE][k] : [iS,iE][k];
+    const y  = topPad + (masse.length-1-k)*zeile;
+    const v  = parseFloat($(feld).value);
+    /* Hilfslinie zum Kupferansatz */
+    add("line",{x1:xz,y1:y+3,x2:xz,y2:cy-(dop?gh:ih)/2,
+                stroke:"#e3e5ea","stroke-width":.6,"stroke-dasharray":"2 3"});
+    /* Masslinie, fein */
+    add("line",{x1:nullX,y1:y,x2:xz,y2:y,stroke:"#9aa0a9","stroke-width":.7});
+    add("path",{d:`M${nullX+4} ${y-2.4} l-4 2.4 l4 2.4 M${xz-4} ${y-2.4} l4 2.4 l-4 2.4`,
+                fill:"none",stroke:"#9aa0a9","stroke-width":.7});
+    /* Buchstabe und Wert über der Linie, damit sie nicht durchgestrichen werden */
+    const mx = nullX + (xz-nullX)/2;
+    txt(mx, y-4, lb + "  " + (isFinite(v) ? nz(v) + " mm" : "– mm"),
+        {fill: isFinite(v) ? "#5b616c" : "#b6bac2", size:8.5, w:600, anchor:"middle"});
+  });
+
+  /* ================= UNTERHALB ================= */
+  let by = cy + gh/2 + 15;
+  if(dop){
+    txt(iS, by, "Oberumspunnst", {fill:"#8a4a1e", w:600, size:9});
+    txt(aS, by+13, "Unterumspunnst", {fill:"#7a3010", w:600, size:9});
+    by += 26;
+  } else {
+    txt(iS, by, "Umspunnst", {fill:"#8a4a1e", w:600, size:9});
+    by += 13;
+  }
+
+  txt(oCx, by, oese, {fill:"#1c1f25", anchor:"middle", size:9});
+  if(isFinite(ringe) && ringe > 0)
+    txt(ringEnde + 2, by, ringe+" Ringe", {fill:"#4e6a78", size:8.5});
+
+  /* Ø Kern — gleiche Schrift wie Ø Gesamt, Masslinie hinter den Ringen */
+  by += 24;
+  add("line",{x1:ringEnde,y1:cy+kh/2,x2:ringEnde,y2:by-4,stroke:"#e3e5ea","stroke-width":.6});
+  add("line",{x1:ringEnde,y1:by,x2:ringEnde+42,y2:by,stroke:"#1c1f25","stroke-width":1.2});
+  txt(ringEnde+49, by+3.5, "Ø Kern "+Math.round(kern)+" µm", {fill:"#1c1f25", size:9.5, w:600});
+
+  /* ---- Ø-Bemassung rechts ---- */
+  const dimV = (x, hh, label, col) => {
+    add("line",{x1:x,y1:cy-hh/2,x2:x,y2:cy+hh/2,stroke:col,"stroke-width":1.2});
+    add("path",{d:`M${x-3.5} ${cy-hh/2+5} l3.5 -5 l3.5 5 M${x-3.5} ${cy+hh/2-5} l3.5 5 l3.5 -5`,
+                fill:"none",stroke:col,"stroke-width":1.2});
+    txt(x+7, cy+3.5, label, {fill:col, size:9.5, w:600});
+  };
+  /* Bei Doppelumspinnung stehen zwei Bemassungen nebeneinander — die
+     Zeichenfläche wächst mit, sonst wird die zweite abgeschnitten. */
+  const zweiDim = dop && isFinite(uAnfV);
+  const dimX1 = 448, dimX2 = 516;
+  const breite = zweiDim ? 588 : 520;
+  add("line",{x1:dop?aE:iE,y1:cy-gh/2,x2:dimX1,y2:cy-gh/2,stroke:"#e3e5ea","stroke-width":.6});
+  add("line",{x1:dop?aE:iE,y1:cy+gh/2,x2:dimX1,y2:cy+gh/2,stroke:"#e3e5ea","stroke-width":.6});
+  dimV(dimX1, gh, "Ø "+Math.round(ges)+" µm", "#1c1f25");
+  if(zweiDim){
+    add("line",{x1:iE,y1:cy-ih/2,x2:dimX2,y2:cy-ih/2,stroke:"#efe0d5","stroke-width":.6});
+    add("line",{x1:iE,y1:cy+ih/2,x2:dimX2,y2:cy+ih/2,stroke:"#efe0d5","stroke-width":.6});
+    dimV(dimX2, ih, "Ø "+Math.round(uAnfV)+" µm", "#8a4a1e");
+  }
+
+  /* ---- Fusszeile ---- */
+  by += 20;
+  txt(nullX, by, "Masse ab Ösenhinterkante bis zum Kupfer", {fill:"#5b616c", size:8.5});
+  if(mZus) txt(nullX, by+12, "Gemessen " + mZus, {fill:"#5b616c", size:8.5});
+
+  svg.setAttribute("viewBox", "0 0 " + breite + " " + Math.round(by + (mZus?24:12)));
+}
+
+function zeichnen(datei, maxKante, guete){
+  return new Promise((fertig, fehler) => {
+    const fr = new FileReader();
+    fr.onerror = () => fehler(new Error("Datei nicht lesbar"));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => fehler(new Error("Kein gültiges Bild"));
+      img.onload = () => {
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if(!w || !h) return fehler(new Error("Bild ohne Abmessungen"));
+        const f = Math.min(1, maxKante / Math.max(w, h));
+        w = Math.max(1, Math.round(w*f)); h = Math.max(1, Math.round(h*f));
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        fertig({ dataUrl: c.toDataURL("image/jpeg", guete), w, h });
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(datei);
+  });
+}
+
+/* HEIC vom iPhone: Safari kann es meist selbst zeichnen, Chrome und
+   Firefox nicht. Darum erst der normale Weg, und nur wenn der scheitert,
+   wird die Umwandlung nachgeladen. */
+function istHeic(datei){
+  return /^image\/hei[cf]/i.test(datei.type || "")
+      || /\.hei[cf]$/i.test(datei.name || "");
+}
+function heicLaden(){
+  if(window.heic2any) return Promise.resolve();
+  return new Promise((fertig, fehler) => {
+    const sk = document.createElement("script");
+    sk.src = "https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js";
+    sk.onload = fertig;
+    sk.onerror = () => fehler(new Error("HEIC-Umwandlung nicht erreichbar"));
+    document.head.appendChild(sk);
+  });
+}
+
+async function verkleinern(datei, maxKante = 1600, guete = 0.82){
+  try{
+    return await zeichnen(datei, maxKante, guete);
+  }catch(err){
+    if(!istHeic(datei)) throw err;
+    const st = $("status");
+    st.className = "status-msg"; st.textContent = "HEIC wird umgewandelt …";
+    await heicLaden();
+    const raus = await window.heic2any({ blob: datei, toType:"image/jpeg", quality: 0.92 });
+    const jpg = Array.isArray(raus) ? raus[0] : raus;
+    const r = await zeichnen(jpg, maxKante, guete);
+    st.textContent = "";
+    return r;
+  }
+}
+
+const FOTO_LABEL = { oese:"Öse", kupferanfang:"Kupferanfang", kupferende:"Kupferende" };
+const FOTOS = { oese:null, kupferanfang:null, kupferende:null };
+const kb = n => n < 1024 ? n + " B" : (n/1024 < 1024 ? Math.round(n/1024) + " kB"
+                                                     : (n/1048576).toFixed(1) + " MB");
+function fotoZeigen(slot){
+  const box = document.querySelector(`.foto[data-slot="${slot}"]`);
+  const vor = box.querySelector(".foto-vor"), feld = box.querySelector(".foto-feld");
+  const f = FOTOS[slot];
+  if(f){
+    vor.querySelector("img").src = f.dataUrl;
+    vor.querySelector(".foto-gr").textContent = f.w + "×" + f.h + " · " + kb(f.bytes);
+    vor.hidden = false; feld.style.display = "none";
+  } else {
+    vor.hidden = true; feld.style.display = "";
+    box.querySelector("input[type=file]").value = "";
+  }
+  const alle = Object.values(FOTOS).filter(Boolean);
+  $("foto-cnt").textContent = alle.length;
+  $("foto-hinweis").textContent = alle.length
+    ? alle.length + " Bild" + (alle.length>1 ? "er" : "") + " · " + kb(alle.reduce((a,x)=>a+x.bytes,0))
+      + " — wird mit der Bestellung gesendet." : "";
+}
+document.querySelectorAll(".foto").forEach(box => {
+  const slot = box.dataset.slot;
+  box.querySelector("input[type=file]").addEventListener("change", async function(){
+    const datei = this.files && this.files[0];
+    if(!datei) return;
+    const st = $("status");
+    try{
+      const r = await verkleinern(datei);
+      FOTOS[slot] = { ...r, name: datei.name || slot + ".jpg", bytes: Math.round(r.dataUrl.length * 3/4) };
+      st.className = "status-msg"; st.textContent = "";
+    }catch(err){
+      FOTOS[slot] = null;
+      st.className = "status-msg bad";
+      st.textContent = "Bild konnte nicht gelesen werden — " + err.message
+        + (istHeic(datei) ? " (HEIC braucht eine Internetverbindung zum Umwandeln)." : ".");
+    }
+    fotoZeigen(slot);
+  });
+  box.querySelector(".foto-weg").addEventListener("click", () => { FOTOS[slot] = null; fotoZeigen(slot); });
+});
+
+/* ---------- Senden ----------
+   Eine Stelle für alle Schreibzugriffe: mit Zeitgrenze, damit ein
+   hängender Aufruf keinen Knopf dauerhaft sperrt, und mit der echten
+   Fehlermeldung aus dem Worker statt eines blossen HTTP-Codes. */
+async function senden(nutzlast, sekunden){
+  if(!ENDPOINT) throw new Error("Kein Worker hinterlegt");
+  const stopp = new AbortController();
+  const uhr = setTimeout(() => stopp.abort(), (sekunden || 60) * 1000);
+  try{
+    const res = await fetch(ENDPOINT, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(nutzlast), signal: stopp.signal
+    });
+    const j = await res.json().catch(() => ({}));
+    if(!res.ok){
+      let grund = j.error || ("HTTP " + res.status);
+      if(j.detail){
+        try{ grund += ": " + (JSON.parse(j.detail).message || "").slice(0, 220); }
+        catch{ grund += ": " + String(j.detail).slice(0, 220); }
+      }
+      throw new Error(grund);
+    }
+    return j;
+  }catch(err){
+    if(err.name === "AbortError") throw new Error("Zeitüberschreitung — nichts gespeichert");
+    throw err;
+  }finally{ clearTimeout(uhr); }
+}
+
+/* ---------- Prüfung ---------- */
+function checkField(el){
+  const f = el.closest(".field"); if(!f) return true;
+  let ok = el.checkValidity();
+  const v = el.value.trim();
+  if(el.required && !v) ok = false;
+  if(el.id === "email" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ok = false;
+  if(el.id === "telefon" && v.replace(/\D/g,"").length < 8) ok = false;
+  if(el.id === "dGesamt"){
+    const g=parseFloat($("dGesamt").value), k=parseFloat($("dKern").value);
+    if(!isNaN(g)&&!isNaN(k)&&g<=k) ok=false;
+  }
+  f.classList.toggle("invalid", !ok);
+  return ok;
+}
+
+/* ---------- Daten ---------- */
+function payload(){
+  const p = { aktion:"bestellung", quelle:"Bestellformular extern", besteller:{} };
+  KONTAKT.forEach(k => { const v=$(k).value.trim(); if(v) p.besteller[k]=v; });
+  FELDER.forEach(k => { const v=String($(k).value).trim(); if(v!=="") p[k]=v; });
+  p.anzahl = Math.max(1, parseInt($("anzahl").value,10) || 1);
+  if($("notiz").value.trim()) p.notiz = $("notiz").value.trim();
+  const bilder = Object.entries(FOTOS).filter(([,f]) => f)
+    .map(([slot,f]) => ({ slot, label: FOTO_LABEL[slot], name: f.name, data: f.dataUrl.split(",")[1] }));
+  if(bilder.length) p.fotos = bilder;
+  if($("website").value) p.website = $("website").value;
+  return p;
+}
+
+/* ---------- Speichern auf dem Gerät ---------- */
+function kontaktSichern(){
+  try{
+    if($("merken").checked)
+      localStorage.setItem(LS_KONTAKT, JSON.stringify(Object.fromEntries(KONTAKT.map(k=>[k,$(k).value]))));
+    else localStorage.removeItem(LS_KONTAKT);
+  }catch(e){}
+}
+function entwurfSichern(){
+  const s={}; form.querySelectorAll("input,select,textarea").forEach(el=>{
+    if(el.id && el.type!=="file" && el.type!=="hidden" && el.type!=="checkbox" && !KONTAKT.includes(el.id)) s[el.id]=el.value; });
+  try{ localStorage.setItem(LS_ENTWURF, JSON.stringify(s)); }catch(e){}
+}
+function laden(){
+  try{
+    const k=JSON.parse(localStorage.getItem(LS_KONTAKT)||"null");
+    if(k) KONTAKT.forEach(id=>{ if(k[id]) $(id).value=k[id]; });
+    const e=JSON.parse(localStorage.getItem(LS_ENTWURF)||"null");
+    if(e) Object.entries(e).forEach(([id,v])=>{ if($(id)) $(id).value=v; });
+  }catch(e){}
+}
+
+/* ---------- Ereignisse ---------- */
+function refresh(){ syncConds(); calc(); draw(); umLabels(); }
+form.addEventListener("input", e=>{
+  refresh(); entwurfSichern();
+  if(e.target.closest(".field.invalid")) checkField(e.target);
+});
+form.addEventListener("change", ()=>{ refresh(); entwurfSichern(); });
+form.querySelectorAll('input[type=number]').forEach(el =>
+  el.addEventListener("wheel", function(e){ if(document.activeElement===this) e.preventDefault(); }, {passive:false}));
+
+$("btn-schema").addEventListener("click", function(){
+  const k = $("schema-karte"), zu = !k.classList.contains("zu");
+  k.classList.toggle("zu", zu);
+  this.textContent = zu ? "Einblenden" : "Ausblenden";
+  this.setAttribute("aria-expanded", String(!zu));
+});
+
+async function bestellen(){
+  const st = $("status");
+  const pflicht = [...form.querySelectorAll("input[required]")];
+  const bad = pflicht.filter(el => !checkField(el));
+  if(bad.length){
+    st.className = "status-msg bad";
+    st.textContent = bad.length === 1 ? "Eine Pflichtangabe fehlt." : bad.length + " Pflichtangaben fehlen.";
+    const sec = bad[0].closest("details"); if(sec) sec.open = true;
+    bad[0].scrollIntoView({behavior:"smooth", block:"center"});
+    setTimeout(() => bad[0].focus({preventScroll:true}), 350);
+    return;
+  }
+  const nutzlast = payload();
+  const anzahl = nutzlast.fotos ? nutzlast.fotos.length : 0;
+  st.className = "status-msg";
+  st.textContent = "Wird gesendet" + (anzahl ? " · " + anzahl + " Bild" + (anzahl>1?"er":"") : "") + " …";
+  const knopf = $("btn-senden"); knopf.disabled = true;
+  try{
+    await senden(nutzlast, anzahl ? 120 : 45);
+    kontaktSichern();
+    try{ localStorage.removeItem(LS_ENTWURF); }catch(e){}
+    st.className = "status-msg"; st.textContent = "";
+    $("fertig-text").textContent = "Die Bestätigung geht an " + $("email").value.trim()
+      + ". Bei Rückfragen melde ich mich unter " + $("telefon").value.trim() + ".";
+    ["ansicht-formular","sendbar","schema-karte","rechen-karte"].forEach(id => $(id).hidden = true);
+    $("fertig").hidden = false;
+    window.scrollTo({top:0});
+  }catch(err){
+    st.className = "status-msg bad";
+    st.textContent = "Nicht gesendet — " + err.message + ". Deine Eingaben bleiben stehen, versuch es erneut.";
+  }finally{ knopf.disabled = false; }
+}
+form.addEventListener("submit", e => { e.preventDefault(); bestellen(); });
+
+function neu(behalten){
+  const keep = {}; behalten.forEach(k => keep[k] = $(k).value);
+  form.reset(); Object.entries(keep).forEach(([k,v]) => $(k).value = v);
+  stahlBeruehrt=false; kupferBeruehrt={};
+  Object.keys(FOTOS).forEach(k => { FOTOS[k]=null; fotoZeigen(k); });
+  form.querySelectorAll(".field").forEach(f=>f.classList.remove("invalid"));
+  ["ansicht-formular","sendbar","schema-karte","rechen-karte"].forEach(id => $(id).hidden = false);
+  $("fertig").hidden = true;
+  refresh(); window.scrollTo({top:0});
+}
+$("btn-weitere").addEventListener("click", () => {
+  neu([...KONTAKT]); const n=$("name"); n.closest("details").open = true; n.focus();
+});
+$("btn-leer").addEventListener("click", () => neu([]));
+
+$("regel-label").textContent = KUPFER_REGEL.label;
+laden();
+refresh();
+
+</script>
+</body>
+</html>
