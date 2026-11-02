@@ -135,6 +135,16 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
 .btn[disabled]{ opacity:.55; cursor:default; }
 .btn.primary{ background:#c8102e; border-color:#a50d26; color:#fff; }
 .btn.primary:hover{ background:#b00d28; }
+/* Senden-Knopf, solange Pflichtangaben fehlen: grau, ein Klick zeigt was fehlt */
+.btn.primary.gesperrt,.btn.primary.gesperrt:hover{ background:#c4c8cf; border-color:#b8bcc4; color:#fff; cursor:not-allowed; box-shadow:none; }
+/* Weitere Saiten im selben Chor */
+.satz-titel{ font-size:11.5px; font-weight:700; color:#1c1f25; letter-spacing:.2px; margin:4px 0 -2px; }
+.satz{ border-top:1px dashed #dcdfe6; margin-top:12px; padding-top:10px; }
+.satz-kopf{ display:flex; align-items:center; justify-content:space-between; }
+.satz-weg{ appearance:none; border:1px solid #d3d7e0; background:#fff; color:#5b616c; border-radius:20px;
+  width:26px; height:26px; font-size:15px; line-height:1; cursor:pointer; }
+.satz-weg:hover{ border-color:#c8102e; color:#c8102e; }
+.satz-plus{ margin-top:12px; width:100%; }
 .btn.sm{ padding:6px 11px; font-size:12px; }
 .btn:focus-visible{ outline:2px solid #2f6fed; outline-offset:2px; }
 
@@ -456,6 +466,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
         </div>
         <p class="spin-note">Die Buchstaben stehen so auch in der Zeichnung. Gemessen ab <b>Ösenhinterkante</b> bis zum <b>Kupfer</b>.</p>
 
+        <div class="satz-titel" id="satz1-titel" hidden>Saite 1</div>
         <div class="cond" id="c-anhEinfach">
           <div class="row2">
             <div class="field">
@@ -497,6 +508,10 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
             </div>
           </div>
         </div>
+
+        <div id="weitere-saetze"></div>
+        <button type="button" class="btn satz-plus" id="btn-satz-plus">+ Weitere Saite im selben Chor</button>
+        <p class="spin-note" style="margin:8px 0 0">Gleicher Aufbau, nur andere Masse — bis zu 3 Saiten pro Bestellung.</p>
       </div>
     </details>
 
@@ -550,7 +565,8 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
     <h2>Bestellung gesendet</h2>
     <p id="fertig-text"></p>
     <div class="fertig-akt">
-      <button type="button" class="btn primary" id="btn-weitere">Weitere Saite bestellen</button>
+      <button type="button" class="btn primary" id="btn-gleich">Weitere Saite für dasselbe Instrument</button>
+      <button type="button" class="btn" id="btn-weitere">Weitere Saite, anderes Instrument</button>
       <button type="button" class="btn" id="btn-leer">Neue Bestellung, leeres Formular</button>
     </div>
   </div>
@@ -626,7 +642,61 @@ function syncConds(){
   ["oberUnten","unterUnten","unterOben","oberOben","dUmspAnfang"].forEach(id => $(id).required = istDoppelt());
   if(istDoppelt()) $("kupfernummer").value = "";
   else { $("kupferOber").value = ""; $("kupferUnter").value = ""; }
+  /* Weitere Saiten im selben Chor: je nach Bauart A/B oder A–D, dann Pflicht */
+  const teil = (el, on) => {
+    el.classList.toggle("on", on);
+    el.querySelectorAll("input").forEach(i => { i.required = on; if(!on) i.value = ""; });
+  };
+  document.querySelectorAll(".satz-einfach").forEach(el => teil(el, !istDoppelt()));
+  document.querySelectorAll(".satz-doppelt").forEach(el => teil(el, istDoppelt()));
+  const weitere = $("weitere-saetze").children.length;
+  $("satz1-titel").hidden = weitere === 0;
+  $("btn-satz-plus").hidden = weitere + 1 >= MAX_SAITEN;
 }
+
+/* ---------- Weitere Saiten im selben Chor (bis zu 3 pro Bestellung) ---------- */
+const MAX_SAITEN = 3;
+const MASS_EINFACH = [["A","anhUnten","zu Umspunnst unten"], ["B","anhOben","zu Umspunnst oben"]];
+const MASS_DOPPELT = [["A","oberUnten","zu Oberumspunnst unten"], ["B","unterUnten","zu Unterumspunnst unten"],
+                      ["C","unterOben","zu Unterumspunnst oben"],  ["D","oberOben","zu Oberumspunnst oben"]];
+const massFeld = ([b, k, txt], n) =>
+  `<div class="field"><label><span class="mk">${b}</span> ${txt} <span class="req">*</span></label>` +
+  `<div class="unit-wrap"><input id="${k}_${n}" type="number" inputmode="decimal" step="0.1"><span class="u">mm</span></div>` +
+  `<div class="err">Bitte ausfüllen.</div></div>`;
+const massPaare = (liste, n) => {
+  let h = "";
+  for(let i = 0; i < liste.length; i += 2) h += `<div class="row2">${massFeld(liste[i], n)}${massFeld(liste[i+1], n)}</div>`;
+  return h;
+};
+function satzHinzufuegen(){
+  const n = $("weitere-saetze").children.length + 2;
+  if(n > MAX_SAITEN) return null;
+  const d = document.createElement("div");
+  d.className = "satz";
+  d.innerHTML = `<div class="satz-kopf"><span class="satz-titel">Saite ${n}</span>` +
+    `<button type="button" class="satz-weg" title="Diese Saite entfernen" aria-label="Saite entfernen">×</button></div>` +
+    `<div class="cond satz-einfach">${massPaare(MASS_EINFACH, n)}</div>` +
+    `<div class="cond satz-doppelt">${massPaare(MASS_DOPPELT, n)}</div>`;
+  d.querySelector(".satz-weg").addEventListener("click", () => {
+    d.remove(); saetzeNummerieren(); refresh(); entwurfSichern();
+  });
+  d.querySelectorAll("input").forEach(el =>
+    el.addEventListener("wheel", function(e){ if(document.activeElement===this) e.preventDefault(); }, {passive:false}));
+  $("weitere-saetze").appendChild(d);
+  return d;
+}
+/* Nach dem Entfernen: Saite 2, 3 … lückenlos neu nummerieren */
+function saetzeNummerieren(){
+  [...$("weitere-saetze").children].forEach((d, i) => {
+    const n = i + 2;
+    d.querySelector(".satz-titel").textContent = "Saite " + n;
+    d.querySelectorAll("input").forEach(el => el.id = el.id.replace(/_\d+$/, "_" + n));
+  });
+}
+$("btn-satz-plus").addEventListener("click", () => {
+  const d = satzHinzufuegen(); refresh(); entwurfSichern();
+  if(d) d.querySelector(".cond.on input").focus();
+});
 
 /* ---------- Rechnen (alles in µm) ---------- */
 const stahlnummer = kernUm => isFinite(kernUm)&&kernUm>0 ? Math.round((kernUm/50 - 2.5)*2)/2 : null;
@@ -1191,8 +1261,8 @@ $("vorwahl").addEventListener("change", () => {
 });
 
 /* ---------- Prüfung ---------- */
-function checkField(el){
-  const f = el.closest(".field"); if(!f) return true;
+function feldOk(el){
+  if(!el.closest(".field")) return true;
   let ok = el.checkValidity();
   const v = el.value.trim();
   if(el.required && !v) ok = false;
@@ -1202,8 +1272,21 @@ function checkField(el){
     const g=parseFloat($("dGesamt").value), k=parseFloat($("dKern").value);
     if(!isNaN(g)&&!isNaN(k)&&g<=k) ok=false;
   }
+  return ok;
+}
+function checkField(el){
+  const f = el.closest(".field"); if(!f) return true;
+  const ok = feldOk(el);
   f.classList.toggle("invalid", !ok);
   return ok;
+}
+const offenePflicht = () => [...form.querySelectorAll("input[required]")].filter(el => !feldOk(el));
+/* Senden-Knopf grau, solange etwas fehlt; ein Klick zeigt trotzdem, was fehlt */
+function sendKnopfAktualisieren(){
+  const offen = offenePflicht().length, k = $("btn-senden");
+  k.classList.toggle("gesperrt", offen > 0);
+  k.setAttribute("aria-disabled", String(offen > 0));
+  k.title = offen ? (offen === 1 ? "Eine Pflichtangabe fehlt" : offen + " Pflichtangaben fehlen") : "";
 }
 
 /* ---------- Daten ---------- */
@@ -1213,6 +1296,12 @@ function payload(){
   delete p.besteller.vorwahl;
   if(telVoll()) p.besteller.telefon = telVoll();
   FELDER.forEach(k => { const v=String($(k).value).trim(); if(v!=="") p[k]=v; });
+  const weitere = [...$("weitere-saetze").children].map(d => {
+    const o = {};
+    d.querySelectorAll(".cond.on input").forEach(i => { if(i.value.trim() !== "") o[i.id.replace(/_\d+$/, "")] = i.value.trim(); });
+    return o;
+  });
+  if(weitere.length) p.weitereSaiten = weitere;
   if($("notiz").value.trim()) p.notiz = $("notiz").value.trim();
   const bilder = Object.entries(FOTOS).filter(([,f]) => f)
     .map(([slot,f]) => ({ slot, label: FOTO_LABEL[slot], name: f.name, data: f.dataUrl.split(",")[1] }));
@@ -1232,7 +1321,9 @@ function kontaktSichern(){
 }
 function entwurfSichern(){
   const s={}; form.querySelectorAll("input,select,textarea").forEach(el=>{
-    if(el.id && el.type!=="file" && el.type!=="hidden" && el.type!=="checkbox" && !KONTAKT.includes(el.id)) s[el.id]=el.value; });  try{ localStorage.setItem(LS_ENTWURF, JSON.stringify(s)); }catch(e){}
+    if(el.id && el.type!=="file" && el.type!=="hidden" && el.type!=="checkbox" && !KONTAKT.includes(el.id)) s[el.id]=el.value; });
+  s.__saetze = $("weitere-saetze").children.length;
+  try{ localStorage.setItem(LS_ENTWURF, JSON.stringify(s)); }catch(e){}
 }
 function laden(){
   try{
@@ -1240,12 +1331,16 @@ function laden(){
     if(k) KONTAKT.forEach(id=>{ if(k[id]) $(id).value=k[id]; });
     telNeuFormatieren();   // auch ältere gespeicherte Nummern wie «+41 79…»
     const e=JSON.parse(localStorage.getItem(LS_ENTWURF)||"null");
-    if(e) Object.entries(e).forEach(([id,v])=>{ if($(id)) $(id).value=v; });
+    if(e){
+      for(let i = 0; i < (e.__saetze || 0); i++) satzHinzufuegen();
+      delete e.__saetze;
+      Object.entries(e).forEach(([id,v])=>{ if($(id)) $(id).value=v; });
+    }
   }catch(e){}
 }
 
 /* ---------- Ereignisse ---------- */
-function refresh(){ syncConds(); calc(); draw(); umLabels(); }
+function refresh(){ syncConds(); calc(); draw(); umLabels(); sendKnopfAktualisieren(); }
 form.addEventListener("input", e=>{
   refresh(); entwurfSichern();
   if(e.target.closest(".field.invalid")) checkField(e.target);
@@ -1263,8 +1358,8 @@ $("btn-schema").addEventListener("click", function(){
 
 async function bestellen(){
   const st = $("status");
-  const pflicht = [...form.querySelectorAll("input[required]")];
-  const bad = pflicht.filter(el => !checkField(el));
+  const bad = offenePflicht();
+  bad.forEach(checkField);
   if(bad.length){
     st.className = "status-msg bad";
     st.textContent = bad.length === 1 ? "Eine Pflichtangabe fehlt." : bad.length + " Pflichtangaben fehlen.";
@@ -1308,6 +1403,7 @@ form.addEventListener("submit", e => { e.preventDefault(); bestellen(); });
 function neu(behalten){
   const keep = {}; behalten.forEach(k => keep[k] = $(k).value);
   form.reset(); Object.entries(keep).forEach(([k,v]) => $(k).value = v);
+  $("weitere-saetze").innerHTML = "";
   stahlBeruehrt=false; kupferBeruehrt={};
   Object.keys(FOTOS).forEach(k => { FOTOS[k]=null; fotoZeigen(k); });
   form.querySelectorAll(".field").forEach(f=>f.classList.remove("invalid"));
@@ -1315,6 +1411,10 @@ function neu(behalten){
   $("fertig").hidden = true;
   refresh(); window.scrollTo({top:0});
 }
+$("btn-gleich").addEventListener("click", () => {
+  neu([...KONTAKT, "name", "messzustand"]);
+  const d = $("dGesamt"); d.closest("details").open = true; d.focus();
+});
 $("btn-weitere").addEventListener("click", () => {
   neu([...KONTAKT]); const n=$("name"); n.closest("details").open = true; n.focus();
 });
