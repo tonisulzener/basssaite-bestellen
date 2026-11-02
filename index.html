@@ -71,7 +71,6 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
 .unit-wrap .u{ position:absolute; right:10px; top:9px; font-size:11.5px; color:#8a8f9a; pointer-events:none; }
 .cond{ display:none; } .cond.on{ display:block; }
 .liefer{ border-left:3px solid #e3e5ea; padding-left:12px; margin:2px 0 10px; }
-.liefer-ort>.field:first-child{ flex:0 0 30%; }
 
 .kunde-zeile{ display:flex; gap:7px; align-items:stretch; }
 .kunde-zeile input{ flex:1; min-width:0; }
@@ -344,40 +343,22 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
           <label for="plzOrt">PLZ &amp; Ort</label>
           <input id="plzOrt" name="plzOrt" type="text" autocomplete="postal-code" placeholder="3006 Bern">
         </div>
-        <label class="merken"><input type="checkbox" id="lfAbw"> Lieferung an eine andere Adresse</label>
+        <label class="merken"><input type="checkbox" id="lfAbw"> Lieferadresse abweichend</label>
         <div class="cond liefer" id="c-liefer">
           <div class="field">
-            <label for="lfName">Name / Firma <span class="req">*</span></label>
+            <label for="lfName">Firma / Name <span class="req">*</span></label>
             <input id="lfName" type="text" autocomplete="shipping organization">
             <div class="err">Bitte ausfüllen.</div>
           </div>
           <div class="field">
-            <label for="lfZusatz">z.H. / Zusatz</label>
-            <input id="lfZusatz" type="text" autocomplete="shipping name" placeholder="z.H. Frau Muster">
-          </div>
-          <div class="field">
-            <label for="lfStrasse">Strasse und Nummer <span class="req">*</span></label>
-            <input id="lfStrasse" type="text" autocomplete="shipping address-line1">
+            <label for="lfAdresse">Adresse <span class="req">*</span></label>
+            <input id="lfAdresse" type="text" autocomplete="shipping street-address" placeholder="Strasse und Nummer">
             <div class="err">Bitte ausfüllen.</div>
           </div>
-          <div class="row2 liefer-ort">
-            <div class="field">
-              <label for="lfPlz">PLZ <span class="req">*</span></label>
-              <input id="lfPlz" type="text" inputmode="numeric" autocomplete="shipping postal-code" maxlength="10">
-              <div class="err">PLZ prüfen.</div>
-            </div>
-            <div class="field">
-              <label for="lfOrt">Ort <span class="req">*</span></label>
-              <input id="lfOrt" type="text" autocomplete="shipping address-level2">
-              <div class="err">Bitte ausfüllen.</div>
-            </div>
-          </div>
           <div class="field">
-            <label for="lfLand">Land</label>
-            <select id="lfLand" autocomplete="shipping country-name">
-              <option>Schweiz</option><option>Liechtenstein</option><option>Deutschland</option>
-              <option>Österreich</option><option>Frankreich</option><option>Italien</option>
-            </select>
+            <label for="lfPlzOrt">PLZ &amp; Ort <span class="req">*</span></label>
+            <input id="lfPlzOrt" type="text" autocomplete="shipping postal-code" placeholder="3006 Bern">
+            <div class="err">PLZ und Ort angeben, z.B. 3006 Bern.</div>
           </div>
         </div>
         <label class="merken"><input type="checkbox" id="merken" checked> Angaben auf diesem Gerät merken</label>
@@ -658,9 +639,8 @@ const FELDER = ["name","dGesamt","dKern","dUmspAnfang","umspunnst","kernart","oe
   "unterOben","unterUnten","oberOben","oberUnten","messzustand"];
 const KONTAKT = ["firma","person","email","vorwahl","telefon","adresse","plzOrt"];
 /* Abweichende Lieferadresse: gilt pro Bestellung, wird nicht auf dem Gerät gemerkt */
-const LIEFER = ["lfAbw","lfName","lfZusatz","lfStrasse","lfPlz","lfOrt","lfLand"];
-const LIEFER_PFLICHT = ["lfName","lfStrasse","lfPlz","lfOrt"];
-const PLZ_STELLEN = { Schweiz:4, Liechtenstein:4, "Österreich":4, Deutschland:5, Frankreich:5, Italien:5 };
+const LIEFER = ["lfAbw","lfName","lfAdresse","lfPlzOrt"];
+const LIEFER_PFLICHT = ["lfName","lfAdresse","lfPlzOrt"];
 
 /* ---------- bedingte Felder ---------- */
 const istDoppelt = () => $("umspunnst").value === "Doppelt";
@@ -1304,10 +1284,6 @@ $("vorwahl").addEventListener("change", () => {
   if($("telefon").closest(".field.invalid")) checkField($("telefon"));
 });
 
-$("lfLand").addEventListener("change", () => {
-  if($("lfPlz").closest(".field.invalid")) checkField($("lfPlz"));
-});
-
 /* ---------- Prüfung ---------- */
 function feldOk(el){
   if(!el.closest(".field")) return true;
@@ -1316,7 +1292,7 @@ function feldOk(el){
   if(el.required && !v) ok = false;
   if(el.id === "email" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ok = false;
   if(el.id === "telefon" && (v.replace(/\D/g,"").length < 6 || telVoll().replace(/\D/g,"").length < 8)) ok = false;
-  if(el.id === "lfPlz" && v && !new RegExp("^\\d{" + (PLZ_STELLEN[$("lfLand").value] || 4) + "}$").test(v)) ok = false;
+  if(el.id === "lfPlzOrt" && v && !/^\d{4,5}\s+\S/.test(v)) ok = false;   // «3006 Bern»
   if(el.id === "dGesamt"){
     const g=parseFloat($("dGesamt").value), k=parseFloat($("dKern").value);
     if(!isNaN(g)&&!isNaN(k)&&g<=k) ok=false;
@@ -1352,8 +1328,7 @@ function payload(){
   });
   if(weitere.length) p.weitereSaiten = weitere;
   if($("lfAbw").checked) p.lieferadresse = {
-    name: $("lfName").value.trim(), zusatz: $("lfZusatz").value.trim(), strasse: $("lfStrasse").value.trim(),
-    plz: $("lfPlz").value.trim(), ort: $("lfOrt").value.trim(), land: $("lfLand").value };
+    name: $("lfName").value.trim(), adresse: $("lfAdresse").value.trim(), plzOrt: $("lfPlzOrt").value.trim() };
   if($("notiz").value.trim()) p.notiz = $("notiz").value.trim();
   const bilder = Object.entries(FOTOS).filter(([,f]) => f)
     .map(([slot,f]) => ({ slot, label: FOTO_LABEL[slot], name: f.name, data: f.dataUrl.split(",")[1] }));
