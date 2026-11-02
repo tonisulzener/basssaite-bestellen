@@ -70,6 +70,8 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
 .unit-wrap input{ padding-right:38px; }
 .unit-wrap .u{ position:absolute; right:10px; top:9px; font-size:11.5px; color:#8a8f9a; pointer-events:none; }
 .cond{ display:none; } .cond.on{ display:block; }
+.liefer{ border-left:3px solid #e3e5ea; padding-left:12px; margin:2px 0 10px; }
+.liefer-ort>.field:first-child{ flex:0 0 30%; }
 
 .kunde-zeile{ display:flex; gap:7px; align-items:stretch; }
 .kunde-zeile input{ flex:1; min-width:0; }
@@ -335,12 +337,48 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0
           <div class="err">Telefonnummer angeben.</div>
         </div>
         <div class="field">
-          <label for="adresse">Lieferadresse</label>
+          <label for="adresse">Adresse</label>
           <input id="adresse" name="adresse" type="text" autocomplete="street-address" placeholder="Strasse und Nummer">
         </div>
         <div class="field">
           <label for="plzOrt">PLZ &amp; Ort</label>
           <input id="plzOrt" name="plzOrt" type="text" autocomplete="postal-code" placeholder="3006 Bern">
+        </div>
+        <label class="merken"><input type="checkbox" id="lfAbw"> Lieferung an eine andere Adresse</label>
+        <div class="cond liefer" id="c-liefer">
+          <div class="field">
+            <label for="lfName">Name / Firma <span class="req">*</span></label>
+            <input id="lfName" type="text" autocomplete="shipping organization">
+            <div class="err">Bitte ausfüllen.</div>
+          </div>
+          <div class="field">
+            <label for="lfZusatz">z.H. / Zusatz</label>
+            <input id="lfZusatz" type="text" autocomplete="shipping name" placeholder="z.H. Frau Muster">
+          </div>
+          <div class="field">
+            <label for="lfStrasse">Strasse und Nummer <span class="req">*</span></label>
+            <input id="lfStrasse" type="text" autocomplete="shipping address-line1">
+            <div class="err">Bitte ausfüllen.</div>
+          </div>
+          <div class="row2 liefer-ort">
+            <div class="field">
+              <label for="lfPlz">PLZ <span class="req">*</span></label>
+              <input id="lfPlz" type="text" inputmode="numeric" autocomplete="shipping postal-code" maxlength="10">
+              <div class="err">PLZ prüfen.</div>
+            </div>
+            <div class="field">
+              <label for="lfOrt">Ort <span class="req">*</span></label>
+              <input id="lfOrt" type="text" autocomplete="shipping address-level2">
+              <div class="err">Bitte ausfüllen.</div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="lfLand">Land</label>
+            <select id="lfLand" autocomplete="shipping country-name">
+              <option>Schweiz</option><option>Liechtenstein</option><option>Deutschland</option>
+              <option>Österreich</option><option>Frankreich</option><option>Italien</option>
+            </select>
+          </div>
         </div>
         <label class="merken"><input type="checkbox" id="merken" checked> Angaben auf diesem Gerät merken</label>
       </div>
@@ -619,6 +657,10 @@ const FELDER = ["name","dGesamt","dKern","dUmspAnfang","umspunnst","kernart","oe
   "lFrzEnde","stahlnummer","kupfernummer","kupferUnter","kupferOber","anhOben","anhUnten",
   "unterOben","unterUnten","oberOben","oberUnten","messzustand"];
 const KONTAKT = ["firma","person","email","vorwahl","telefon","adresse","plzOrt"];
+/* Abweichende Lieferadresse: gilt pro Bestellung, wird nicht auf dem Gerät gemerkt */
+const LIEFER = ["lfAbw","lfName","lfZusatz","lfStrasse","lfPlz","lfOrt","lfLand"];
+const LIEFER_PFLICHT = ["lfName","lfStrasse","lfPlz","lfOrt"];
+const PLZ_STELLEN = { Schweiz:4, Liechtenstein:4, "Österreich":4, Deutschland:5, Frankreich:5, Italien:5 };
 
 /* ---------- bedingte Felder ---------- */
 const istDoppelt = () => $("umspunnst").value === "Doppelt";
@@ -628,7 +670,8 @@ const conds = [
   ["c-anhEinfach",    () => !istDoppelt()],
   ["c-zopf",          () => $("oesenart").value === "Zopföse"],
   ["c-frzAnfang",     () => $("kupferanfang").value === "französisches Ende"],
-  ["c-frzEnde",       () => $("kupferende").value === "französisches Ende"]
+  ["c-frzEnde",       () => $("kupferende").value === "französisches Ende"],
+  ["c-liefer",        () => $("lfAbw").checked]
 ];
 function syncConds(){
   conds.forEach(([id,test]) => {
@@ -640,6 +683,7 @@ function syncConds(){
   /* Anhangstift-Masse: Pflicht für die jeweils sichtbare Bauart */
   ["anhUnten","anhOben"].forEach(id => $(id).required = !istDoppelt());
   ["oberUnten","unterUnten","unterOben","oberOben","dUmspAnfang"].forEach(id => $(id).required = istDoppelt());
+  LIEFER_PFLICHT.forEach(id => $(id).required = $("lfAbw").checked);
   if(istDoppelt()) $("kupfernummer").value = "";
   else { $("kupferOber").value = ""; $("kupferUnter").value = ""; }
   /* Weitere Saiten im selben Chor: je nach Bauart A/B oder A–D, dann Pflicht */
@@ -1260,6 +1304,10 @@ $("vorwahl").addEventListener("change", () => {
   if($("telefon").closest(".field.invalid")) checkField($("telefon"));
 });
 
+$("lfLand").addEventListener("change", () => {
+  if($("lfPlz").closest(".field.invalid")) checkField($("lfPlz"));
+});
+
 /* ---------- Prüfung ---------- */
 function feldOk(el){
   if(!el.closest(".field")) return true;
@@ -1268,6 +1316,7 @@ function feldOk(el){
   if(el.required && !v) ok = false;
   if(el.id === "email" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ok = false;
   if(el.id === "telefon" && (v.replace(/\D/g,"").length < 6 || telVoll().replace(/\D/g,"").length < 8)) ok = false;
+  if(el.id === "lfPlz" && v && !new RegExp("^\\d{" + (PLZ_STELLEN[$("lfLand").value] || 4) + "}$").test(v)) ok = false;
   if(el.id === "dGesamt"){
     const g=parseFloat($("dGesamt").value), k=parseFloat($("dKern").value);
     if(!isNaN(g)&&!isNaN(k)&&g<=k) ok=false;
@@ -1302,6 +1351,9 @@ function payload(){
     return o;
   });
   if(weitere.length) p.weitereSaiten = weitere;
+  if($("lfAbw").checked) p.lieferadresse = {
+    name: $("lfName").value.trim(), zusatz: $("lfZusatz").value.trim(), strasse: $("lfStrasse").value.trim(),
+    plz: $("lfPlz").value.trim(), ort: $("lfOrt").value.trim(), land: $("lfLand").value };
   if($("notiz").value.trim()) p.notiz = $("notiz").value.trim();
   const bilder = Object.entries(FOTOS).filter(([,f]) => f)
     .map(([slot,f]) => ({ slot, label: FOTO_LABEL[slot], name: f.name, data: f.dataUrl.split(",")[1] }));
@@ -1323,6 +1375,7 @@ function entwurfSichern(){
   const s={}; form.querySelectorAll("input,select,textarea").forEach(el=>{
     if(el.id && el.type!=="file" && el.type!=="hidden" && el.type!=="checkbox" && !KONTAKT.includes(el.id)) s[el.id]=el.value; });
   s.__saetze = $("weitere-saetze").children.length;
+  s.__lfAbw = $("lfAbw").checked;
   try{ localStorage.setItem(LS_ENTWURF, JSON.stringify(s)); }catch(e){}
 }
 function laden(){
@@ -1333,7 +1386,8 @@ function laden(){
     const e=JSON.parse(localStorage.getItem(LS_ENTWURF)||"null");
     if(e){
       for(let i = 0; i < (e.__saetze || 0); i++) satzHinzufuegen();
-      delete e.__saetze;
+      $("lfAbw").checked = !!e.__lfAbw;
+      delete e.__saetze; delete e.__lfAbw;
       Object.entries(e).forEach(([id,v])=>{ if($(id)) $(id).value=v; });
     }
   }catch(e){}
@@ -1401,8 +1455,9 @@ async function bestellen(){
 form.addEventListener("submit", e => { e.preventDefault(); bestellen(); });
 
 function neu(behalten){
-  const keep = {}; behalten.forEach(k => keep[k] = $(k).value);
-  form.reset(); Object.entries(keep).forEach(([k,v]) => $(k).value = v);
+  const wert = el => el.type === "checkbox" ? "checked" : "value";
+  const keep = {}; behalten.forEach(k => keep[k] = $(k)[wert($(k))]);
+  form.reset(); Object.entries(keep).forEach(([k,v]) => $(k)[wert($(k))] = v);
   $("weitere-saetze").innerHTML = "";
   stahlBeruehrt=false; kupferBeruehrt={};
   Object.keys(FOTOS).forEach(k => { FOTOS[k]=null; fotoZeigen(k); });
@@ -1412,7 +1467,7 @@ function neu(behalten){
   refresh(); window.scrollTo({top:0});
 }
 $("btn-gleich").addEventListener("click", () => {
-  neu([...KONTAKT, "name", "messzustand"]);
+  neu([...KONTAKT, ...LIEFER, "name", "messzustand"]);
   const d = $("dGesamt"); d.closest("details").open = true; d.focus();
 });
 $("btn-weitere").addEventListener("click", () => {
